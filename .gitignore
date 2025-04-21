@@ -1,4 +1,10 @@
+## Common ignores
 *.vscode
+**/build
+
+## googletest build
+*_include.cmake
+
 ## C++ stuff
 
 # Prerequisites
@@ -45,3 +51,4 @@
 **/*.cbp
 **/CMakeScripts
 **/compile_commands.json
+**/_deps
