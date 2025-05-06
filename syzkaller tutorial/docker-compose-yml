@@ -1,0 +1,17 @@
+services:
+  syzkaller:
+    image: gcr.io/syzkaller/env:latest
+    container_name: syzkaller
+    stdin_open: true     # Enables interactive mode (-i)
+    tty: true            # Enables terminal (-t)
+    privileged: true     # Same as --privileged
+    working_dir: /syzkaller/gopath/src/github.com/google/syzkaller
+    command: bash        # Starts a bash shell
+    environment:
+      - HOME=/syzkaller
+      - GOPATH=/syzkaller/gopath:/gopath
+      - SOURCEDIR=/syzkaller/kernel
+    volumes:
+      - /home/dwappner/Desktop/linux:/syzkaller/kernel:z
+      - /home/dwappner/Desktop/syzkaller:/syzkaller/gopath/src/github.com/google/syzkaller:z
+    restart: "no"
