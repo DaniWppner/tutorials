@@ -1,0 +1,18 @@
+services:
+  app:
+    build: .
+    container_name: tutorial_app
+    stdin_open: true 
+    tty: true
+    privileged: true
+    working_dir: /app/impl
+    environment:
+      - HOME=/app
+      - SOURCEDIR=/app/bogus
+    volumes:
+      - /home/dwappner/Desktop/linux:/app/bogus:z
+      - /home/dwappner/getting-started-app:/app/impl:z
+    ports:
+      - "3000:3000"
+    restart: "no"
+      
