@@ -17,12 +17,3 @@ services:
     ports:
       - 8080:56741
     restart: "no"
-  syzkaller-client:
-    build: ./client
-    container_name: syzkaller-client
-    stdin_open: true 
-    tty: true
-    privileged: true
-    ports:
-      - 3000:3000
-    restart: "no"
