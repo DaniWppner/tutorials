@@ -1,0 +1,20 @@
+2025/05/09 16:26:13 running ssh: []string{"-p", "30581", "-F", "/dev/null", "-o", "UserKnownHostsFile=/dev/null", "-o", "IdentitiesOnly=yes", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=10", "-i", "/syzkaller/gopath/src/github.com/google/syzkaller/tmp/bullseye.id_rsa", "-v", "root@localhost", "pwd"}
+2025/05/09 16:26:23 ssh failed: failed to run ["ssh" "-p" "30581" "-F" "/dev/null" "-o" "UserKnownHostsFile=/dev/null" "-o" "IdentitiesOnly=yes" "-o" "BatchMode=yes" "-o" "StrictHostKeyChecking=no" "-o" "ConnectTimeout=10" "-i" "/syzkaller/gopath/src/github.com/google/syzkaller/tmp/bullseye.id_rsa" "-v" "root@localhost" "pwd"]: exit status 255
+OpenSSH_9.2p1 Debian-2+deb12u5, OpenSSL 3.0.15 3 Sep 2024
+debug1: Reading configuration data /dev/null
+debug1: Connecting to localhost [::1] port 30581.
+debug1: connect to address ::1 port 30581: Connection refused
+debug1: Connecting to localhost [127.0.0.1] port 30581.
+debug1: fd 3 clearing O_NONBLOCK
+debug1: Connection established.
+debug1: identity file /syzkaller/gopath/src/github.com/google/syzkaller/tmp/bullseye.id_rsa type 0
+debug1: identity file /syzkaller/gopath/src/github.com/google/syzkaller/tmp/bullseye.id_rsa-cert type -1
+debug1: Local version string SSH-2.0-OpenSSH_9.2p1 Debian-2+deb12u5
+Connection timed out during banner exchange
+Connection to 127.0.0.1 port 30581 timed out
+syzkaller login: 
+2025/05/09 16:30:38 pool: booting instance 0
+2025/05/09 16:30:38 running command: qemu-system-x86_64 []string{"-m", "2048", "-smp", "2", "-chardev", "socket,id=SOCKSYZ,server=on,wait=off,host=localhost,port=52471", "-mon", "chardev=SOCKSYZ,mode=control", "-display", "none", "-serial", "stdio", "-no-reboot", "-name", "VM-0", "-device", "virtio-rng-pci", "-enable-kvm", "-cpu", "host,migratable=off", "-device", "e1000,netdev=net0", "-netdev", "user,id=net0,restrict=on,hostfwd=tcp:127.0.0.1:52079-:22", "-hda", "/syzkaller/gopath/src/github.com/google/syzkaller/tmp/bullseye.img", "-snapshot", "-kernel", "/syzkaller/kernel/arch/x86/boot/bzImage", "-append", "root=/dev/sda console=ttyS0 "}
+2025/05/09 16:30:38 VM 0: crash: can't ssh into the instance
+2025/05/09 16:30:38 [FATAL] kernel crashed in smoke testing mode, exiting
+
