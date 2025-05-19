@@ -21,6 +21,10 @@ index d5f89f9ef29f..11b866f69e20 100644
 ```
 
 ### 3. Compile kernel with appropiate configurations
+First, make sure you have the following apt dependencies installed:
+```
+flex bison bc libelf-dev libssl-dev
+```
 Execute the following commands inside the kernel source root.
 path/to/syzkaller.config refers to syzkaller.config available on the root of this tutorial. 
 ```
@@ -49,11 +53,12 @@ To provide an image to launch QEMU VMs using the compiled kernel, use the create
 
 Execute the following commands inside the syzkaller repo:
 ```
+mkdir workdir-ptracebug
 mkdir tmp
 cd tmp
 ../tools/create-image.sh
 ```
-`ptrace_bug.cfg` assumes that you executed this script from inside the `syzkaller/tmp` directory.
+`ptrace_bug.cfg` assumes that you executed the script from inside the `syzkaller/tmp` directory.
 
 ### 7. Compile syzkaller
 If you don't have the go toolchain locally available, a way to do this is:
