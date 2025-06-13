@@ -5,4 +5,11 @@
 ```sudo apt-get install systemtap```
 
 - Ejecutar el script de bpftrace:
-`bpftrace trace_vfs_open_inodes`
+```
+bpftrace trace_vfs_open_inodes
+```
+(en otra terminal)
+```
+gcc file_opener.c -o file_opener
+./file_opener
+```
