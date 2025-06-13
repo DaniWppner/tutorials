@@ -1,0 +1,70 @@
+kprobe:vfs_open
+/comm == "file_opener"/
+{
+  $path = (struct path *)arg0;
+  
+  printf("vfs_open file: name=%s, inode=%d, mode=0%o\n",
+         str($path->dentry->d_name.name),
+         $path->dentry->d_inode->i_ino,
+         $path->dentry->d_inode->i_mode);
+}
+
+kprobe:vfs_link
+/comm == "file_opener"/
+{
+  $old_dentry = (struct dentry *)arg0;
+  $old_dentrys_parent = (struct dentry *) $old_dentry->d_parent;
+  $dir = (struct inode *)arg2;
+  $child = (struct dentry *)arg3;
+  $childs_parent = (struct dentry *) $child->d_parent;
+
+  printf("vfs_link\n");
+  printf("  old_dentry:\n\t name=%s",
+         str($old_dentry->d_name.name));
+
+  if($old_dentry->d_inode == 0){
+    printf(",\n\t inode=NULL");
+  }else{
+    printf(",\n\t node:\n \t\t i_mode=0%o,\n\t\t i_ino=%d,\n\t\t i_flags=%d,\n\t\t i_nlink=%d",
+          $old_dentry->d_inode->i_mode,
+          $old_dentry->d_inode->i_ino,
+          $old_dentry->d_inode->i_flags,
+          $old_dentry->d_inode->i_nlink);
+  }
+  printf(",\n\t parent_name=%s",
+       str($old_dentrys_parent->d_name.name));
+  
+  printf(",\n\t parent_inode:\n \t\t i_mode=0%o,\n\t\t i_ino=%d,\n\t\t i_flags=%d,\n\t\t i_nlink=%d",
+          $old_dentrys_parent->d_inode->i_mode,
+          $old_dentrys_parent->d_inode->i_ino,
+          $old_dentrys_parent->d_inode->i_flags,
+          $old_dentrys_parent->d_inode->i_nlink);
+
+  printf("vfs_link:\n  dir:\n\t i_mode=0%o,\n\t i_ino=%d,\n\t i_flags=%d,\n\t i_nlink=%d",
+         $dir->i_mode,
+         $dir->i_ino,
+         $dir->i_flags,
+         $dir->i_nlink);
+
+  printf("\n  child:\n\t name=%s",
+         str($child->d_name.name));
+
+  if($child->d_inode == 0){
+    printf(",\n\t inode=NULL");
+  }else{
+    printf(",\n\t node:\n \t\t i_mode=0%o,\n\t\t i_ino=%d,\n\t\t i_flags=%d,\n\t\t i_nlink=%d",
+          $child->d_inode->i_mode,
+          $child->d_inode->i_ino,
+          $child->d_inode->i_flags,
+          $child->d_inode->i_nlink);
+  }
+  printf(",\n\t parent_name=%s",
+       str($childs_parent->d_name.name));
+  
+  printf(",\n\t parent_inode:\n \t\t i_mode=0%o,\n\t\t i_ino=%d,\n\t\t i_flags=%d,\n\t\t i_nlink=%d",
+          $childs_parent->d_inode->i_mode,
+          $childs_parent->d_inode->i_ino,
+          $childs_parent->d_inode->i_flags,
+          $childs_parent->d_inode->i_nlink);
+  printf("\n");
+}

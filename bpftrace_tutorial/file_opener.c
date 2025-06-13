@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <errno.h>
 
 int main() {
     int fd1 = open("/etc/hostname", O_RDONLY);
@@ -17,5 +20,21 @@ int main() {
 	 close(fd2);
     }
 
+    if (mkdir("./tmp/a", 0755) == 0) {
+        printf("Created directory ./tmp/a\n");
+    }
+
+    if (link("./tmp/testfile.txt", "./tmp/a/b.txt") == 0) {
+        printf("Created hard link ./tmp/a/b.txt -> ./tmp/testfile.txt\n");
+    }
+
+    if (unlink("./tmp/a/b.txt") == 0) {
+        printf("Deleted ./tmp/a/b.txt\n");
+    }
+
+    if (rmdir("./tmp/a") == 0) {
+        printf("Deleted directory ./tmp/a\n");
+    }
+    
     return 0;
 }
