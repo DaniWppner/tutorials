@@ -34,7 +34,7 @@ scripts/kconfig/merge_config.sh .config path/to/syzkaller.config
 make olddefconfig
 make -j8
 ```
-You may update the ammount of compilation threads according to the available CPUs.
+You may update the amount of compilation threads according to the available CPUs.
 
 ### 4. symlink the linux source directory into syzkaller
 Make sure to name the link "kernel" inside the syzkaller directory
