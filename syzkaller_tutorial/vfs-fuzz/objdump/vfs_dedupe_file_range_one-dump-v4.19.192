@@ -1,0 +1,258 @@
+
+linux/vmlinux:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+
+ffffffff81617eb0 <vfs_dedupe_file_range_one.part.0>:
+out_error:
+	return error;
+}
+EXPORT_SYMBOL(vfs_dedupe_file_range_compare);
+
+int vfs_dedupe_file_range_one(struct file *src_file, loff_t src_pos,
+ffffffff81617eb0:	41 55                	push   %r13
+ffffffff81617eb2:	49 89 cd             	mov    %rcx,%r13
+ffffffff81617eb5:	41 54                	push   %r12
+ffffffff81617eb7:	49 89 d4             	mov    %rdx,%r12
+ffffffff81617eba:	55                   	push   %rbp
+ffffffff81617ebb:	48 89 f5             	mov    %rsi,%rbp
+ffffffff81617ebe:	53                   	push   %rbx
+ffffffff81617ebf:	48 89 fb             	mov    %rdi,%rbx
+
+	ret = mnt_want_write_file(dst_file);
+	if (ret)
+		return ret;
+
+	ret = clone_verify_area(dst_file, dst_pos, len, true);
+ffffffff81617ec2:	e8 f9 71 d7 ff       	call   ffffffff8138f0c0 <__sanitizer_cov_trace_pc>
+ffffffff81617ec7:	4c 89 e6             	mov    %r12,%rsi
+ffffffff81617eca:	48 89 ef             	mov    %rbp,%rdi
+ffffffff81617ecd:	b9 01 00 00 00       	mov    $0x1,%ecx
+ffffffff81617ed2:	4c 89 ea             	mov    %r13,%rdx
+ffffffff81617ed5:	e8 86 fd ff ff       	call   ffffffff81617c60 <clone_verify_area>
+	if (ret < 0)
+ffffffff81617eda:	31 ff                	xor    %edi,%edi
+	ret = clone_verify_area(dst_file, dst_pos, len, true);
+ffffffff81617edc:	48 63 f0             	movslq %eax,%rsi
+ffffffff81617edf:	49 89 f4             	mov    %rsi,%r12
+	if (ret < 0)
+ffffffff81617ee2:	e8 69 73 d7 ff       	call   ffffffff8138f250 <__sanitizer_cov_trace_const_cmp8>
+ffffffff81617ee7:	45 85 e4             	test   %r12d,%r12d
+ffffffff81617eea:	0f 88 41 01 00 00    	js     ffffffff81618031 <vfs_dedupe_file_range_one.part.0+0x181>
+		goto out_drop_write;
+
+	ret = -EINVAL;
+	if (!(capable(CAP_SYS_ADMIN) || (dst_file->f_mode & FMODE_WRITE)))
+ffffffff81617ef0:	e8 cb 71 d7 ff       	call   ffffffff8138f0c0 <__sanitizer_cov_trace_pc>
+ffffffff81617ef5:	bf 15 00 00 00       	mov    $0x15,%edi
+ffffffff81617efa:	e8 51 72 b2 ff       	call   ffffffff8113f150 <capable>
+ffffffff81617eff:	31 ff                	xor    %edi,%edi
+ffffffff81617f01:	41 89 c4             	mov    %eax,%r12d
+ffffffff81617f04:	89 c6                	mov    %eax,%esi
+ffffffff81617f06:	e8 e5 72 d7 ff       	call   ffffffff8138f1f0 <__sanitizer_cov_trace_const_cmp1>
+ffffffff81617f0b:	45 84 e4             	test   %r12b,%r12b
+ffffffff81617f0e:	0f 84 34 01 00 00    	je     ffffffff81618048 <vfs_dedupe_file_range_one.part.0+0x198>
+		goto out_drop_write;
+
+	ret = -EXDEV;
+	if (src_file->f_path.mnt != dst_file->f_path.mnt)
+ffffffff81617f14:	e8 a7 71 d7 ff       	call   ffffffff8138f0c0 <__sanitizer_cov_trace_pc>
+ffffffff81617f19:	48 8d 7b 10          	lea    0x10(%rbx),%rdi
+ffffffff81617f1d:	48 b8 00 00 00 00 00 	movabs $0xdffffc0000000000,%rax
+ffffffff81617f24:	fc ff df 
+ffffffff81617f27:	48 89 fa             	mov    %rdi,%rdx
+ffffffff81617f2a:	48 c1 ea 03          	shr    $0x3,%rdx
+ffffffff81617f2e:	80 3c 02 00          	cmpb   $0x0,(%rdx,%rax,1)
+ffffffff81617f32:	0f 85 78 01 00 00    	jne    ffffffff816180b0 <vfs_dedupe_file_range_one.part.0+0x200>
+ffffffff81617f38:	48 8d 7d 10          	lea    0x10(%rbp),%rdi
+ffffffff81617f3c:	48 8b 5b 10          	mov    0x10(%rbx),%rbx
+ffffffff81617f40:	48 b8 00 00 00 00 00 	movabs $0xdffffc0000000000,%rax
+ffffffff81617f47:	fc ff df 
+ffffffff81617f4a:	48 89 fa             	mov    %rdi,%rdx
+ffffffff81617f4d:	48 c1 ea 03          	shr    $0x3,%rdx
+ffffffff81617f51:	80 3c 02 00          	cmpb   $0x0,(%rdx,%rax,1)
+ffffffff81617f55:	0f 85 5f 01 00 00    	jne    ffffffff816180ba <vfs_dedupe_file_range_one.part.0+0x20a>
+ffffffff81617f5b:	41 bc ee ff ff ff    	mov    $0xffffffee,%r12d
+ffffffff81617f61:	48 3b 5d 10          	cmp    0x10(%rbp),%rbx
+ffffffff81617f65:	0f 85 c6 00 00 00    	jne    ffffffff81618031 <vfs_dedupe_file_range_one.part.0+0x181>
+		goto out_drop_write;
+
+	ret = -EISDIR;
+	if (S_ISDIR(file_inode(dst_file)->i_mode))
+ffffffff81617f6b:	e8 50 71 d7 ff       	call   ffffffff8138f0c0 <__sanitizer_cov_trace_pc>
+ffffffff81617f70:	48 8d 7d 20          	lea    0x20(%rbp),%rdi
+ffffffff81617f74:	48 b8 00 00 00 00 00 	movabs $0xdffffc0000000000,%rax
+ffffffff81617f7b:	fc ff df 
+ffffffff81617f7e:	48 89 fa             	mov    %rdi,%rdx
+ffffffff81617f81:	48 c1 ea 03          	shr    $0x3,%rdx
+ffffffff81617f85:	80 3c 02 00          	cmpb   $0x0,(%rdx,%rax,1)
+ffffffff81617f89:	0f 85 49 01 00 00    	jne    ffffffff816180d8 <vfs_dedupe_file_range_one.part.0+0x228>
+ffffffff81617f8f:	48 b8 00 00 00 00 00 	movabs $0xdffffc0000000000,%rax
+ffffffff81617f96:	fc ff df 
+ffffffff81617f99:	48 8b 5d 20          	mov    0x20(%rbp),%rbx
+ffffffff81617f9d:	48 89 da             	mov    %rbx,%rdx
+ffffffff81617fa0:	48 c1 ea 03          	shr    $0x3,%rdx
+ffffffff81617fa4:	0f b6 04 02          	movzbl (%rdx,%rax,1),%eax
+ffffffff81617fa8:	84 c0                	test   %al,%al
+ffffffff81617faa:	74 08                	je     ffffffff81617fb4 <vfs_dedupe_file_range_one.part.0+0x104>
+ffffffff81617fac:	3c 01                	cmp    $0x1,%al
+ffffffff81617fae:	0f 8e e8 00 00 00    	jle    ffffffff8161809c <vfs_dedupe_file_range_one.part.0+0x1ec>
+ffffffff81617fb4:	0f b7 1b             	movzwl (%rbx),%ebx
+ffffffff81617fb7:	bf 00 40 00 00       	mov    $0x4000,%edi
+ffffffff81617fbc:	66 81 e3 00 f0       	and    $0xf000,%bx
+ffffffff81617fc1:	89 de                	mov    %ebx,%esi
+ffffffff81617fc3:	e8 48 72 d7 ff       	call   ffffffff8138f210 <__sanitizer_cov_trace_const_cmp2>
+ffffffff81617fc8:	66 81 fb 00 40       	cmp    $0x4000,%bx
+ffffffff81617fcd:	0f 84 c1 00 00 00    	je     ffffffff81618094 <vfs_dedupe_file_range_one.part.0+0x1e4>
+		goto out_drop_write;
+
+	ret = -EINVAL;
+	if (!dst_file->f_op->dedupe_file_range)
+ffffffff81617fd3:	e8 e8 70 d7 ff       	call   ffffffff8138f0c0 <__sanitizer_cov_trace_pc>
+ffffffff81617fd8:	48 8d 7d 28          	lea    0x28(%rbp),%rdi
+ffffffff81617fdc:	48 b8 00 00 00 00 00 	movabs $0xdffffc0000000000,%rax
+ffffffff81617fe3:	fc ff df 
+ffffffff81617fe6:	48 89 fa             	mov    %rdi,%rdx
+ffffffff81617fe9:	48 c1 ea 03          	shr    $0x3,%rdx
+ffffffff81617fed:	80 3c 02 00          	cmpb   $0x0,(%rdx,%rax,1)
+ffffffff81617ff1:	0f 85 d7 00 00 00    	jne    ffffffff816180ce <vfs_dedupe_file_range_one.part.0+0x21e>
+ffffffff81617ff7:	48 b8 00 00 00 00 00 	movabs $0xdffffc0000000000,%rax
+ffffffff81617ffe:	fc ff df 
+ffffffff81618001:	48 8b 5d 28          	mov    0x28(%rbp),%rbx
+ffffffff81618005:	48 8d bb f0 00 00 00 	lea    0xf0(%rbx),%rdi
+ffffffff8161800c:	48 89 fa             	mov    %rdi,%rdx
+ffffffff8161800f:	48 c1 ea 03          	shr    $0x3,%rdx
+ffffffff81618013:	80 3c 02 00          	cmpb   $0x0,(%rdx,%rax,1)
+ffffffff81618017:	0f 85 a7 00 00 00    	jne    ffffffff816180c4 <vfs_dedupe_file_range_one.part.0+0x214>
+ffffffff8161801d:	48 83 bb f0 00 00 00 	cmpq   $0x0,0xf0(%rbx)
+ffffffff81618024:	00 
+ffffffff81618025:	0f 85 61 91 64 02    	jne    ffffffff83c6118c <vfs_dedupe_file_range_one.part.0.cold>
+ffffffff8161802b:	41 bc ea ff ff ff    	mov    $0xffffffea,%r12d
+	pr_err("Reachable: file->f_op->dedupe_file_range");
+	BUG();
+	ret = dst_file->f_op->dedupe_file_range(src_file, src_pos,
+						dst_file, dst_pos, len);
+out_drop_write:
+	mnt_drop_write_file(dst_file);
+ffffffff81618031:	e8 8a 70 d7 ff       	call   ffffffff8138f0c0 <__sanitizer_cov_trace_pc>
+ffffffff81618036:	48 89 ef             	mov    %rbp,%rdi
+ffffffff81618039:	e8 a2 bd 07 00       	call   ffffffff81693de0 <mnt_drop_write_file>
+
+	return ret;
+}
+ffffffff8161803e:	44 89 e0             	mov    %r12d,%eax
+ffffffff81618041:	5b                   	pop    %rbx
+ffffffff81618042:	5d                   	pop    %rbp
+ffffffff81618043:	41 5c                	pop    %r12
+ffffffff81618045:	41 5d                	pop    %r13
+ffffffff81618047:	c3                   	ret
+	if (!(capable(CAP_SYS_ADMIN) || (dst_file->f_mode & FMODE_WRITE)))
+ffffffff81618048:	e8 73 70 d7 ff       	call   ffffffff8138f0c0 <__sanitizer_cov_trace_pc>
+ffffffff8161804d:	48 8d 7d 7c          	lea    0x7c(%rbp),%rdi
+ffffffff81618051:	48 b8 00 00 00 00 00 	movabs $0xdffffc0000000000,%rax
+ffffffff81618058:	fc ff df 
+ffffffff8161805b:	48 89 fa             	mov    %rdi,%rdx
+ffffffff8161805e:	48 c1 ea 03          	shr    $0x3,%rdx
+ffffffff81618062:	0f b6 14 02          	movzbl (%rdx,%rax,1),%edx
+ffffffff81618066:	48 89 f8             	mov    %rdi,%rax
+ffffffff81618069:	83 e0 07             	and    $0x7,%eax
+ffffffff8161806c:	83 c0 03             	add    $0x3,%eax
+ffffffff8161806f:	38 d0                	cmp    %dl,%al
+ffffffff81618071:	7c 04                	jl     ffffffff81618077 <vfs_dedupe_file_range_one.part.0+0x1c7>
+ffffffff81618073:	84 d2                	test   %dl,%dl
+ffffffff81618075:	75 32                	jne    ffffffff816180a9 <vfs_dedupe_file_range_one.part.0+0x1f9>
+ffffffff81618077:	44 8b 65 7c          	mov    0x7c(%rbp),%r12d
+ffffffff8161807b:	31 ff                	xor    %edi,%edi
+ffffffff8161807d:	41 83 e4 02          	and    $0x2,%r12d
+ffffffff81618081:	44 89 e6             	mov    %r12d,%esi
+ffffffff81618084:	e8 a7 71 d7 ff       	call   ffffffff8138f230 <__sanitizer_cov_trace_const_cmp4>
+ffffffff81618089:	45 85 e4             	test   %r12d,%r12d
+ffffffff8161808c:	0f 85 82 fe ff ff    	jne    ffffffff81617f14 <vfs_dedupe_file_range_one.part.0+0x64>
+ffffffff81618092:	eb 97                	jmp    ffffffff8161802b <vfs_dedupe_file_range_one.part.0+0x17b>
+ffffffff81618094:	41 bc eb ff ff ff    	mov    $0xffffffeb,%r12d
+ffffffff8161809a:	eb 95                	jmp    ffffffff81618031 <vfs_dedupe_file_range_one.part.0+0x181>
+	if (S_ISDIR(file_inode(dst_file)->i_mode))
+ffffffff8161809c:	48 89 df             	mov    %rbx,%rdi
+ffffffff8161809f:	e8 ac c2 fc ff       	call   ffffffff815e4350 <__asan_report_load2_noabort>
+ffffffff816180a4:	e9 0b ff ff ff       	jmp    ffffffff81617fb4 <vfs_dedupe_file_range_one.part.0+0x104>
+	if (!(capable(CAP_SYS_ADMIN) || (dst_file->f_mode & FMODE_WRITE)))
+ffffffff816180a9:	e8 b2 c2 fc ff       	call   ffffffff815e4360 <__asan_report_load4_noabort>
+ffffffff816180ae:	eb c7                	jmp    ffffffff81618077 <vfs_dedupe_file_range_one.part.0+0x1c7>
+	if (src_file->f_path.mnt != dst_file->f_path.mnt)
+ffffffff816180b0:	e8 bb c2 fc ff       	call   ffffffff815e4370 <__asan_report_load8_noabort>
+ffffffff816180b5:	e9 7e fe ff ff       	jmp    ffffffff81617f38 <vfs_dedupe_file_range_one.part.0+0x88>
+ffffffff816180ba:	e8 b1 c2 fc ff       	call   ffffffff815e4370 <__asan_report_load8_noabort>
+ffffffff816180bf:	e9 97 fe ff ff       	jmp    ffffffff81617f5b <vfs_dedupe_file_range_one.part.0+0xab>
+	if (!dst_file->f_op->dedupe_file_range)
+ffffffff816180c4:	e8 a7 c2 fc ff       	call   ffffffff815e4370 <__asan_report_load8_noabort>
+ffffffff816180c9:	e9 4f ff ff ff       	jmp    ffffffff8161801d <vfs_dedupe_file_range_one.part.0+0x16d>
+ffffffff816180ce:	e8 9d c2 fc ff       	call   ffffffff815e4370 <__asan_report_load8_noabort>
+ffffffff816180d3:	e9 1f ff ff ff       	jmp    ffffffff81617ff7 <vfs_dedupe_file_range_one.part.0+0x147>
+	if (S_ISDIR(file_inode(dst_file)->i_mode))
+ffffffff816180d8:	e8 93 c2 fc ff       	call   ffffffff815e4370 <__asan_report_load8_noabort>
+ffffffff816180dd:	e9 ad fe ff ff       	jmp    ffffffff81617f8f <vfs_dedupe_file_range_one.part.0+0xdf>
+
+
+
+ffffffff816180f0 <vfs_dedupe_file_range_one>:
+}
+EXPORT_SYMBOL(vfs_dedupe_file_range_compare);
+
+int vfs_dedupe_file_range_one(struct file *src_file, loff_t src_pos,
+			      struct file *dst_file, loff_t dst_pos, u64 len)
+{
+ffffffff816180f0:	41 57                	push   %r15
+ffffffff816180f2:	4d 89 c7             	mov    %r8,%r15
+ffffffff816180f5:	41 56                	push   %r14
+ffffffff816180f7:	49 89 ce             	mov    %rcx,%r14
+ffffffff816180fa:	41 55                	push   %r13
+ffffffff816180fc:	49 89 fd             	mov    %rdi,%r13
+ffffffff816180ff:	41 54                	push   %r12
+ffffffff81618101:	55                   	push   %rbp
+ffffffff81618102:	48 89 d5             	mov    %rdx,%rbp
+	s64 ret;
+
+	ret = mnt_want_write_file(dst_file);
+ffffffff81618105:	e8 b6 6f d7 ff       	call   ffffffff8138f0c0 <__sanitizer_cov_trace_pc>
+ffffffff8161810a:	48 89 ef             	mov    %rbp,%rdi
+ffffffff8161810d:	e8 ce 21 08 00       	call   ffffffff8169a2e0 <mnt_want_write_file>
+	if (ret)
+ffffffff81618112:	31 ff                	xor    %edi,%edi
+	ret = mnt_want_write_file(dst_file);
+ffffffff81618114:	41 89 c4             	mov    %eax,%r12d
+	if (ret)
+ffffffff81618117:	89 c6                	mov    %eax,%esi
+ffffffff81618119:	e8 12 71 d7 ff       	call   ffffffff8138f230 <__sanitizer_cov_trace_const_cmp4>
+ffffffff8161811e:	45 85 e4             	test   %r12d,%r12d
+ffffffff81618121:	75 19                	jne    ffffffff8161813c <vfs_dedupe_file_range_one+0x4c>
+ffffffff81618123:	e8 98 6f d7 ff       	call   ffffffff8138f0c0 <__sanitizer_cov_trace_pc>
+ffffffff81618128:	4c 89 f9             	mov    %r15,%rcx
+ffffffff8161812b:	4c 89 f2             	mov    %r14,%rdx
+ffffffff8161812e:	48 89 ee             	mov    %rbp,%rsi
+ffffffff81618131:	4c 89 ef             	mov    %r13,%rdi
+ffffffff81618134:	e8 77 fd ff ff       	call   ffffffff81617eb0 <vfs_dedupe_file_range_one.part.0>
+ffffffff81618139:	41 89 c4             	mov    %eax,%r12d
+ffffffff8161813c:	e8 7f 6f d7 ff       	call   ffffffff8138f0c0 <__sanitizer_cov_trace_pc>
+						dst_file, dst_pos, len);
+out_drop_write:
+	mnt_drop_write_file(dst_file);
+
+	return ret;
+}
+ffffffff81618141:	44 89 e0             	mov    %r12d,%eax
+ffffffff81618144:	5d                   	pop    %rbp
+ffffffff81618145:	41 5c                	pop    %r12
+ffffffff81618147:	41 5d                	pop    %r13
+ffffffff81618149:	41 5e                	pop    %r14
+ffffffff8161814b:	41 5f                	pop    %r15
+ffffffff8161814d:	c3                   	ret
+
+Disassembly of section .init.text:
+
+Disassembly of section .altinstr_aux:
+
+Disassembly of section .altinstr_replacement:
+
+Disassembly of section .exit.text:
