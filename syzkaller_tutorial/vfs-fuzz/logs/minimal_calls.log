@@ -1,0 +1,656 @@
+2025/06/27 15:02:35 serving rpc on tcp://37817
+2025/06/27 15:02:35 serving http on http://127.0.0.1:56741
+2025/06/27 15:02:39 skipped 40 seeds
+2025/06/27 15:03:00 machine check:
+disabled the following syscalls:
+read$smackfs_access                         : smack is not enabled
+read$smackfs_cipsonum                       : smack is not enabled
+read$smackfs_logging                        : smack is not enabled
+read$smackfs_ptrace                         : smack is not enabled
+write$apparmor_current                      : apparmor is not enabled
+write$apparmor_exec                         : apparmor is not enabled
+write$smack_current                         : smack is not enabled
+write$smackfs_access                        : smack is not enabled
+write$smackfs_change_rule                   : smack is not enabled
+write$smackfs_cipso                         : smack is not enabled
+write$smackfs_cipsonum                      : smack is not enabled
+write$smackfs_ipv6host                      : smack is not enabled
+write$smackfs_label                         : smack is not enabled
+write$smackfs_labels_list                   : smack is not enabled
+write$smackfs_load                          : smack is not enabled
+write$smackfs_logging                       : smack is not enabled
+write$smackfs_netlabel                      : smack is not enabled
+write$smackfs_ptrace                        : smack is not enabled
+
+transitively disabled the following syscalls (missing resource [creating syscalls]):
+close$binfmt                                : fd_binfmt [openat$binfmt]
+close$fd_v4l2_buffer                        : fd_v4l2_buffer [ioctl$VIDIOC_QUERYBUF_DMABUF]
+close$ibv_device                            : fd_rdma [openat$uverbs0]
+read$FUSE                                   : fd_fuse [openat$cuse openat$fuse]
+read$alg                                    : sock_algconn [accept$alg accept4$alg]
+read$char_usb                               : fd_char_usb [syz_open_dev$char_usb]
+read$dsp                                    : fd_dsp [openat$adsp1 openat$audio openat$audio1 openat$dsp openat$dsp1]
+read$eventfd                                : fd_event [eventfd eventfd2]
+read$fb                                     : fd_fb [openat$fb0 openat$fb1]
+read$hiddev                                 : fd_hiddev [syz_open_dev$hiddev]
+read$hidraw                                 : fd_hidraw [syz_open_dev$hidraw]
+read$midi                                   : fd_midi [syz_open_dev$admmidi syz_open_dev$amidi syz_open_dev$dmmidi syz_open_dev$midi syz_open_dev$sndmidi]
+read$msr                                    : fd_msr [syz_open_dev$MSR]
+read$nci                                    : fd_nci [openat$nci]
+read$proc_mixer                             : fd_proc_mixer [openat$proc_mixer]
+read$ptp                                    : fd_ptp [openat$ptp0 openat$ptp1]
+read$qrtrtun                                : fd_qrtr_tun [openat$qrtrtun]
+read$rfkill                                 : fd_rfkill [openat$rfkill]
+read$sequencer                              : fd_seq [openat$sequencer openat$sequencer2]
+read$snapshot                               : fd_snapshot [openat$snapshot]
+read$snddsp                                 : fd_snd_dsp [syz_open_dev$sndpcmc syz_open_dev$sndpcmp]
+read$sndhw                                  : fd_snd_hw [syz_open_dev$sndhw]
+read$trusty                                 : fd_trusty [openat$trusty openat$trusty_avb openat$trusty_gatekeeper ...]
+read$usbfs                                  : fd_usbfs [syz_open_dev$usbfs]
+read$usbmon                                 : fd_usbmon [syz_open_dev$usbmon]
+read$watch_queue                            : fd_watch_queue [pipe2$watch_queue]
+write$6lowpan_control                       : fd_6lowpan_control [openat$6lowpan_control]
+write$6lowpan_enable                        : fd_6lowpan_enable [openat$6lowpan_enable]
+write$9p                                    : wfd9p [pipe2$9p]
+write$ALLOC_MW                              : fd_rdma [openat$uverbs0]
+write$ALLOC_PD                              : fd_rdma [openat$uverbs0]
+write$ATTACH_MCAST                          : fd_rdma [openat$uverbs0]
+write$CLOSE_XRCD                            : fd_rdma [openat$uverbs0]
+write$CREATE_AH                             : fd_rdma [openat$uverbs0]
+write$CREATE_COMP_CHANNEL                   : fd_rdma [openat$uverbs0]
+write$CREATE_CQ                             : fd_rdma [openat$uverbs0]
+write$CREATE_CQ_EX                          : fd_rdma [openat$uverbs0]
+write$CREATE_FLOW                           : fd_rdma [openat$uverbs0]
+write$CREATE_QP                             : fd_rdma [openat$uverbs0]
+write$CREATE_RWQ_IND_TBL                    : fd_rdma [openat$uverbs0]
+write$CREATE_SRQ                            : fd_rdma [openat$uverbs0]
+write$CREATE_WQ                             : fd_rdma [openat$uverbs0]
+write$DEALLOC_MW                            : fd_rdma [openat$uverbs0]
+write$DEALLOC_PD                            : fd_rdma [openat$uverbs0]
+write$DEREG_MR                              : fd_rdma [openat$uverbs0]
+write$DESTROY_AH                            : fd_rdma [openat$uverbs0]
+write$DESTROY_CQ                            : fd_rdma [openat$uverbs0]
+write$DESTROY_FLOW                          : fd_rdma [openat$uverbs0]
+write$DESTROY_QP                            : fd_rdma [openat$uverbs0]
+write$DESTROY_RWQ_IND_TBL                   : fd_rdma [openat$uverbs0]
+write$DESTROY_SRQ                           : fd_rdma [openat$uverbs0]
+write$DESTROY_WQ                            : fd_rdma [openat$uverbs0]
+write$DETACH_MCAST                          : fd_rdma [openat$uverbs0]
+write$FUSE_ATTR                             : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_BMAP                             : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_CREATE_OPEN                      : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_DIRENT                           : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_DIRENTPLUS                       : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_ENTRY                            : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_GETXATTR                         : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_INIT                             : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_INTERRUPT                        : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_IOCTL                            : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_LK                               : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_LSEEK                            : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_NOTIFY_DELETE                    : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_NOTIFY_INVAL_ENTRY               : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_NOTIFY_INVAL_INODE               : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_NOTIFY_POLL                      : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_NOTIFY_RESEND                    : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_NOTIFY_RETRIEVE                  : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_NOTIFY_STORE                     : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_OPEN                             : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_POLL                             : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_STATFS                           : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_STATX                            : fd_fuse [openat$cuse openat$fuse]
+write$FUSE_WRITE                            : fd_fuse [openat$cuse openat$fuse]
+write$MLX5_ALLOC_PD                         : fd_rdma [openat$uverbs0]
+write$MLX5_CREATE_CQ                        : fd_rdma [openat$uverbs0]
+write$MLX5_CREATE_DV_QP                     : fd_rdma [openat$uverbs0]
+write$MLX5_CREATE_QP                        : fd_rdma [openat$uverbs0]
+write$MLX5_CREATE_SRQ                       : fd_rdma [openat$uverbs0]
+write$MLX5_CREATE_WQ                        : fd_rdma [openat$uverbs0]
+write$MLX5_GET_CONTEXT                      : fd_rdma [openat$uverbs0]
+write$MLX5_MODIFY_WQ                        : fd_rdma [openat$uverbs0]
+write$MODIFY_QP                             : fd_rdma [openat$uverbs0]
+write$MODIFY_SRQ                            : fd_rdma [openat$uverbs0]
+write$OPEN_XRCD                             : fd_rdma [openat$uverbs0]
+write$P9_RATTACH                            : wfd9p [pipe2$9p]
+write$P9_RAUTH                              : wfd9p [pipe2$9p]
+write$P9_RCLUNK                             : wfd9p [pipe2$9p]
+write$P9_RCREATE                            : wfd9p [pipe2$9p]
+write$P9_RFLUSH                             : wfd9p [pipe2$9p]
+write$P9_RFSYNC                             : wfd9p [pipe2$9p]
+write$P9_RGETATTR                           : wfd9p [pipe2$9p]
+write$P9_RGETLOCK                           : wfd9p [pipe2$9p]
+write$P9_RLCREATE                           : wfd9p [pipe2$9p]
+write$P9_RLERROR                            : wfd9p [pipe2$9p]
+write$P9_RLERRORu                           : wfd9p [pipe2$9p]
+write$P9_RLINK                              : wfd9p [pipe2$9p]
+write$P9_RLOCK                              : wfd9p [pipe2$9p]
+write$P9_RLOPEN                             : wfd9p [pipe2$9p]
+write$P9_RMKDIR                             : wfd9p [pipe2$9p]
+write$P9_RMKNOD                             : wfd9p [pipe2$9p]
+write$P9_ROPEN                              : wfd9p [pipe2$9p]
+write$P9_RREAD                              : wfd9p [pipe2$9p]
+write$P9_RREADDIR                           : wfd9p [pipe2$9p]
+write$P9_RREADLINK                          : wfd9p [pipe2$9p]
+write$P9_RREMOVE                            : wfd9p [pipe2$9p]
+write$P9_RRENAME                            : wfd9p [pipe2$9p]
+write$P9_RRENAMEAT                          : wfd9p [pipe2$9p]
+write$P9_RSETATTR                           : wfd9p [pipe2$9p]
+write$P9_RSTAT                              : wfd9p [pipe2$9p]
+write$P9_RSTATFS                            : wfd9p [pipe2$9p]
+write$P9_RSTATu                             : wfd9p [pipe2$9p]
+write$P9_RSYMLINK                           : wfd9p [pipe2$9p]
+write$P9_RUNLINKAT                          : wfd9p [pipe2$9p]
+write$P9_RVERSION                           : wfd9p [pipe2$9p]
+write$P9_RWALK                              : wfd9p [pipe2$9p]
+write$P9_RWRITE                             : wfd9p [pipe2$9p]
+write$P9_RWSTAT                             : wfd9p [pipe2$9p]
+write$P9_RXATTRCREATE                       : wfd9p [pipe2$9p]
+write$P9_RXATTRWALK                         : wfd9p [pipe2$9p]
+write$POLL_CQ                               : fd_rdma [openat$uverbs0]
+write$POST_RECV                             : fd_rdma [openat$uverbs0]
+write$POST_SEND                             : fd_rdma [openat$uverbs0]
+write$POST_SRQ_RECV                         : fd_rdma [openat$uverbs0]
+write$QUERY_DEVICE_EX                       : fd_rdma [openat$uverbs0]
+write$QUERY_PORT                            : fd_rdma [openat$uverbs0]
+write$QUERY_QP                              : fd_rdma [openat$uverbs0]
+write$QUERY_SRQ                             : fd_rdma [openat$uverbs0]
+write$RDMA_USER_CM_CMD_ACCEPT               : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_BIND                 : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_BIND_IP              : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_CONNECT              : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_CREATE_ID            : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_DESTROY_ID           : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_DISCONNECT           : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_GET_EVENT            : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_INIT_QP_ATTR         : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_JOIN_IP_MCAST        : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_JOIN_MCAST           : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_LEAVE_MCAST          : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_LISTEN               : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_MIGRATE_ID           : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_NOTIFY               : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_QUERY                : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_QUERY_ROUTE          : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_REJECT               : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_RESOLVE_ADDR         : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_RESOLVE_IP           : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_RESOLVE_ROUTE        : fd_rdma_cm [openat$rdma_cm]
+write$RDMA_USER_CM_CMD_SET_OPTION           : fd_rdma_cm [openat$rdma_cm]
+write$REG_MR                                : fd_rdma [openat$uverbs0]
+write$REQ_NOTIFY_CQ                         : fd_rdma [openat$uverbs0]
+write$REREG_MR                              : fd_rdma [openat$uverbs0]
+write$RESIZE_CQ                             : fd_rdma [openat$uverbs0]
+write$UHID_CREATE                           : fd_uhid [openat$uhid]
+write$UHID_CREATE2                          : fd_uhid [openat$uhid]
+write$UHID_DESTROY                          : fd_uhid [openat$uhid]
+write$UHID_GET_REPORT_REPLY                 : fd_uhid [openat$uhid]
+write$UHID_INPUT                            : fd_uhid [openat$uhid]
+write$UHID_INPUT2                           : fd_uhid [openat$uhid]
+write$UHID_SET_REPORT_REPLY                 : fd_uhid [openat$uhid]
+write$USERIO_CMD_REGISTER                   : fd_userio [openat$userio]
+write$USERIO_CMD_SEND_INTERRUPT             : fd_userio [openat$userio]
+write$USERIO_CMD_SET_PORT_TYPE              : fd_userio [openat$userio]
+write$binfmt_aout                           : fd_binfmt [openat$binfmt]
+write$binfmt_elf32                          : fd_binfmt [openat$binfmt]
+write$binfmt_elf64                          : fd_binfmt [openat$binfmt]
+write$binfmt_format                         : fd_binfmt_format [openat$binfmt_format]
+write$binfmt_misc                           : fd_binfmt [openat$binfmt]
+write$binfmt_register                       : fd_binfmt_register [openat$binfmt_register]
+write$binfmt_script                         : fd_binfmt [openat$binfmt]
+write$bt_hci                                : sock_bt_hci [syz_init_net_socket$bt_hci]
+write$capi20                                : fd_capi20 [openat$capi20]
+write$capi20_data                           : fd_capi20 [openat$capi20]
+write$cgroup_devices                        : fd_cgroup_devices [openat$cgroup_devices]
+write$cgroup_freezer_state                  : fd_cgroup_freezer_state [openat$cgroup_freezer_state]
+write$cgroup_int                            : fd_cgroup_int [openat$cgroup_int]
+write$cgroup_netprio_ifpriomap              : fd_cgroup_netprio_ifpriomap [openat$cgroup_netprio_ifpriomap]
+write$cgroup_pid                            : fd_cgroup_pid [openat$cgroup_procs]
+write$cgroup_pressure                       : fd_cgroup_pressure [openat$cgroup_pressure]
+write$cgroup_subtree                        : fd_cgroup_subtree [openat$cgroup_subtree]
+write$cgroup_type                           : fd_cgroup_type [openat$cgroup_type]
+write$char_usb                              : fd_char_usb [syz_open_dev$char_usb]
+write$damon_attrs                           : fd_damon_attrs [openat$damon_attrs]
+write$damon_contexts                        : fd_damon_contexts [openat$damon_mk_contexts openat$damon_rm_contexts]
+write$damon_init_regions                    : fd_damon_init_regions [openat$damon_init_regions]
+write$damon_monitor_on                      : fd_damon_monitor_on [openat$damon_monitor_on]
+write$damon_schemes                         : fd_damon_schemes [openat$damon_schemes]
+write$damon_target_ids                      : fd_damon_target_ids [openat$damon_target_ids]
+write$dsp                                   : fd_dsp [openat$adsp1 openat$audio openat$audio1 openat$dsp openat$dsp1]
+write$evdev                                 : fd_evdev [syz_open_dev$evdev]
+write$eventfd                               : fd_event [eventfd eventfd2]
+write$fb                                    : fd_fb [openat$fb0 openat$fb1]
+write$hidraw                                : fd_hidraw [syz_open_dev$hidraw]
+write$input_event                           : fd_uinput [openat$uinput]
+write$khugepaged_scan                       : fd_khugepaged_scan [openat$khugepaged_scan]
+write$midi                                  : fd_midi [syz_open_dev$admmidi syz_open_dev$amidi syz_open_dev$dmmidi syz_open_dev$midi syz_open_dev$sndmidi]
+write$nbd                                   : sock_nbd_server [socketpair$nbd]
+write$nci                                   : fd_nci [openat$nci]
+write$ppp                                   : fd_ppp [openat$ppp]
+write$proc_mixer                            : fd_proc_mixer [openat$proc_mixer]
+write$proc_reclaim                          : fd_proc_reclaim [openat$proc_reclaim]
+write$qrtrtun                               : fd_qrtr_tun [openat$qrtrtun]
+write$rfkill                                : fd_rfkill [openat$rfkill]
+write$selinux_access                        : fd_selinux_access [openat$selinux_access openat$selinux_member openat$selinux_relabel]
+write$selinux_attr                          : fd_selinux_attr [openat$selinux_attr]
+write$selinux_context                       : fd_selinux_context [openat$selinux_context]
+write$selinux_create                        : fd_selinux_create [openat$selinux_create]
+write$selinux_load                          : fd_selinux_load [openat$selinux_load]
+write$selinux_user                          : fd_selinux_user [openat$selinux_user]
+write$selinux_validatetrans                 : fd_selinux_validatetrans [openat$selinux_validatetrans]
+write$sequencer                             : fd_seq [openat$sequencer openat$sequencer2]
+write$snapshot                              : fd_snapshot [openat$snapshot]
+write$snddsp                                : fd_snd_dsp [syz_open_dev$sndpcmc syz_open_dev$sndpcmp]
+write$sndhw                                 : fd_snd_hw [syz_open_dev$sndhw]
+write$sndhw_fireworks                       : fd_snd_hw [syz_open_dev$sndhw]
+write$sndseq                                : fd_sndseq [openat$sndseq]
+write$sysctl                                : fd_sysctl [openat$sysctl]
+write$tcp_congestion                        : fd_tcp_congestion [openat$tcp_congestion]
+write$tcp_mem                               : fd_tcp_mem [openat$tcp_mem]
+write$trusty                                : fd_trusty [openat$trusty openat$trusty_avb openat$trusty_gatekeeper ...]
+write$trusty_avb                            : fd_trusty_avb [openat$trusty_avb]
+write$trusty_gatekeeper                     : fd_trusty_gatekeeper [openat$trusty_gatekeeper]
+write$trusty_hwkey                          : fd_trusty_hwkey [openat$trusty_hwkey]
+write$trusty_hwrng                          : fd_trusty_hwrng [openat$trusty_hwrng]
+write$trusty_km                             : fd_trusty_km [openat$trusty_km]
+write$trusty_km_secure                      : fd_trusty_km_secure [openat$trusty_km_secure]
+write$trusty_storage                        : fd_trusty_storage [openat$trusty_storage]
+write$tun                                   : fd_tun [openat$tun]
+write$uinput_user_dev                       : fd_uinput [openat$uinput]
+write$usbip_server                          : fd_usbip_server [syz_usbip_server_init]
+write$vga_arbiter                           : fd_vga_arbiter [openat$vga_arbiter]
+write$vhost_msg                             : vhost_net [openat$vnet]
+write$vhost_msg_v2                          : vhost_net [openat$vnet]
+write$yama_ptrace_scope                     : fd_yama_ptrace_scope [openat$yama_ptrace_scope]
+
+BinFmtMisc              : enabled
+Comparisons             : enabled
+Coverage                : enabled
+DelayKcovMmap           : enabled
+DevlinkPCI              : PCI device 0000:00:10.0 is not available
+ExtraCoverage           : call 0 failed with errno 998
+Fault                   : enabled
+KCSAN                   : write(/sys/kernel/debug/kcsan, on) failed
+LRWPANEmulation         : netlink_query_family_id failed
+Leak                    : failed to write(kmemleak, "scan=off")
+NetDevices              : enabled
+NetInjection            : tun: can't open /dev/net/tun.  (errno 2: No such file or directory).
+NicVF                   : PCI device 0000:00:11.0 is not available
+SandboxAndroid          : setfilecon: setxattr failed.  (errno 22: Invalid argument). . process exited with status 67.
+SandboxNamespace        : sandbox fork failed.  (errno 22: Invalid argument). . process exited with status 67.
+SandboxNone             : enabled
+SandboxSetuid           : enabled
+Swap                    : enabled
+USBEmulation            : failed to chmod /dev/raw-gadget
+VhciInjection           : socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI) failed.  (errno 97: Address family not supported by protocol).
+WifiEmulation           : netlink_query_family_id failed.  (errno 2: No such file or directory).
+syscalls                : 17/7961
+
+2025/06/27 15:03:00 corpus                  : 102 (102 seeds), 0 to be reminimized, 0 to be resmashed
+2025/06/27 15:03:05 candidates=74 corpus=0 coverage=0 exec total=67 (118/min) pending=0 reproducing=0 
+2025/06/27 15:03:15 candidates=12 corpus=16 coverage=7206 exec total=256 (349/min) pending=0 reproducing=0 
+2025/06/27 15:03:21 starting bug reproductions (max 2 VMs, 1 repros)
+2025/06/27 15:03:25 candidates=0 corpus=35 coverage=7774 exec total=494 (548/min) pending=0 reproducing=0 
+2025/06/27 15:03:35 candidates=0 corpus=40 coverage=7998 exec total=583 (546/min) pending=0 reproducing=0 
+2025/06/27 15:03:45 candidates=0 corpus=45 coverage=8195 exec total=689 (558/min) pending=0 reproducing=0 
+2025/06/27 15:03:55 candidates=0 corpus=48 coverage=8249 exec total=777 (555/min) pending=0 reproducing=0 
+2025/06/27 15:04:05 candidates=0 corpus=54 coverage=8793 exec total=868 (554/min) pending=0 reproducing=0 
+2025/06/27 15:04:15 candidates=0 corpus=60 coverage=8874 exec total=946 (545/min) pending=0 reproducing=0 
+2025/06/27 15:04:25 candidates=0 corpus=65 coverage=8897 exec total=1015 (534/min) pending=0 reproducing=0 
+2025/06/27 15:04:35 candidates=0 corpus=66 coverage=9095 exec total=1110 (537/min) pending=0 reproducing=0 
+2025/06/27 15:04:45 candidates=0 corpus=73 coverage=9174 exec total=1377 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:04:55 candidates=0 corpus=81 coverage=9454 exec total=1585 (11/sec) pending=0 reproducing=0 
+2025/06/27 15:05:05 candidates=0 corpus=83 coverage=9470 exec total=1859 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:05:15 candidates=0 corpus=90 coverage=9616 exec total=2170 (13/sec) pending=0 reproducing=0 
+2025/06/27 15:05:25 candidates=0 corpus=100 coverage=9731 exec total=2413 (13/sec) pending=0 reproducing=0 
+2025/06/27 15:05:35 candidates=0 corpus=102 coverage=12183 exec total=2592 (14/sec) pending=0 reproducing=0 
+2025/06/27 15:05:45 candidates=0 corpus=111 coverage=12219 exec total=2745 (14/sec) pending=0 reproducing=0 
+2025/06/27 15:05:55 candidates=0 corpus=117 coverage=12234 exec total=2853 (13/sec) pending=0 reproducing=0 
+2025/06/27 15:06:05 candidates=0 corpus=118 coverage=12279 exec total=2934 (13/sec) pending=0 reproducing=0 
+2025/06/27 15:06:15 candidates=0 corpus=119 coverage=12295 exec total=3010 (13/sec) pending=0 reproducing=0 
+2025/06/27 15:06:25 candidates=0 corpus=123 coverage=12324 exec total=3091 (13/sec) pending=0 reproducing=0 
+2025/06/27 15:06:35 candidates=0 corpus=125 coverage=12337 exec total=3186 (13/sec) pending=0 reproducing=0 
+2025/06/27 15:06:45 candidates=0 corpus=128 coverage=12397 exec total=3295 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:06:55 candidates=0 corpus=133 coverage=12431 exec total=3412 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:07:05 candidates=0 corpus=135 coverage=12453 exec total=3504 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:07:15 candidates=0 corpus=136 coverage=12455 exec total=3625 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:07:25 candidates=0 corpus=140 coverage=12897 exec total=3716 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:07:35 candidates=0 corpus=146 coverage=12928 exec total=3835 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:07:45 candidates=0 corpus=148 coverage=12929 exec total=3939 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:07:55 candidates=0 corpus=149 coverage=12929 exec total=4043 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:08:05 candidates=0 corpus=146 coverage=12929 exec total=4167 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:08:15 candidates=0 corpus=153 coverage=12973 exec total=4300 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:08:25 candidates=0 corpus=158 coverage=13035 exec total=4432 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:08:35 candidates=0 corpus=160 coverage=13250 exec total=4543 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:08:45 candidates=0 corpus=162 coverage=13261 exec total=4624 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:08:55 candidates=0 corpus=163 coverage=13261 exec total=4714 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:09:05 candidates=0 corpus=162 coverage=13261 exec total=4801 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:09:15 candidates=0 corpus=166 coverage=13265 exec total=4875 (12/sec) pending=0 reproducing=0 
+2025/06/27 15:09:25 candidates=0 corpus=168 coverage=13363 exec total=4935 (11/sec) pending=0 reproducing=0 
+2025/06/27 15:09:35 candidates=0 corpus=171 coverage=13381 exec total=5028 (11/sec) pending=0 reproducing=0 
+2025/06/27 15:09:45 candidates=0 corpus=174 coverage=13440 exec total=5142 (11/sec) pending=0 reproducing=0 
+2025/06/27 15:09:55 candidates=0 corpus=176 coverage=13440 exec total=5223 (11/sec) pending=0 reproducing=0 
+2025/06/27 15:10:05 candidates=0 corpus=173 coverage=13440 exec total=5306 (11/sec) pending=0 reproducing=0 
+2025/06/27 15:10:15 candidates=0 corpus=174 coverage=13449 exec total=5411 (11/sec) pending=0 reproducing=0 
+2025/06/27 15:10:25 candidates=0 corpus=174 coverage=13449 exec total=5492 (11/sec) pending=0 reproducing=0 
+2025/06/27 15:10:35 candidates=0 corpus=176 coverage=13449 exec total=5568 (11/sec) pending=0 reproducing=0 
+2025/06/27 15:10:45 candidates=0 corpus=176 coverage=13449 exec total=5648 (11/sec) pending=0 reproducing=0 
+2025/06/27 15:10:55 candidates=0 corpus=180 coverage=13629 exec total=5729 (11/sec) pending=0 reproducing=0 
+2025/06/27 15:11:05 candidates=0 corpus=177 coverage=13681 exec total=5791 (11/sec) pending=0 reproducing=0 
+2025/06/27 15:11:15 candidates=0 corpus=179 coverage=13688 exec total=5868 (11/sec) pending=0 reproducing=0 
+2025/06/27 15:11:25 candidates=0 corpus=180 coverage=13688 exec total=5933 (11/sec) pending=0 reproducing=0 
+2025/06/27 15:11:35 candidates=0 corpus=183 coverage=13694 exec total=6015 (11/sec) pending=0 reproducing=0 
+2025/06/27 15:11:45 candidates=0 corpus=183 coverage=13694 exec total=6110 (11/sec) pending=0 reproducing=0 
+2025/06/27 15:11:55 candidates=0 corpus=185 coverage=13729 exec total=6201 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:12:05 candidates=0 corpus=185 coverage=13729 exec total=6297 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:12:15 candidates=0 corpus=185 coverage=13729 exec total=6394 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:12:25 candidates=0 corpus=186 coverage=13738 exec total=6495 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:12:35 candidates=0 corpus=186 coverage=13738 exec total=6580 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:12:45 candidates=0 corpus=188 coverage=13740 exec total=6668 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:12:55 candidates=0 corpus=190 coverage=13789 exec total=6771 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:13:05 candidates=0 corpus=187 coverage=13886 exec total=6865 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:13:15 candidates=0 corpus=188 coverage=13886 exec total=6958 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:13:25 candidates=0 corpus=189 coverage=13886 exec total=7034 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:13:35 candidates=0 corpus=189 coverage=13886 exec total=7107 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:13:45 candidates=0 corpus=190 coverage=13886 exec total=7182 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:13:55 candidates=0 corpus=191 coverage=13890 exec total=7249 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:14:05 candidates=0 corpus=190 coverage=13891 exec total=7315 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:14:15 candidates=0 corpus=190 coverage=13891 exec total=7385 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:14:25 candidates=0 corpus=193 coverage=14140 exec total=7456 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:14:35 candidates=0 corpus=193 coverage=14140 exec total=7515 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:14:45 candidates=0 corpus=195 coverage=14174 exec total=7597 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:14:55 candidates=0 corpus=195 coverage=14174 exec total=7661 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:15:05 candidates=0 corpus=197 coverage=14176 exec total=7748 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:15:15 candidates=0 corpus=198 coverage=14176 exec total=7828 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:15:25 candidates=0 corpus=199 coverage=14178 exec total=7892 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:15:35 candidates=0 corpus=199 coverage=14178 exec total=7954 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:15:45 candidates=0 corpus=201 coverage=14197 exec total=8023 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:15:55 candidates=0 corpus=201 coverage=14197 exec total=8084 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:16:05 candidates=0 corpus=202 coverage=14198 exec total=8191 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:16:15 candidates=0 corpus=203 coverage=14198 exec total=8285 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:16:25 candidates=0 corpus=205 coverage=14201 exec total=8371 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:16:35 candidates=0 corpus=206 coverage=14237 exec total=8465 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:16:45 candidates=0 corpus=209 coverage=14276 exec total=8552 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:16:55 candidates=0 corpus=211 coverage=14279 exec total=8658 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:17:05 candidates=0 corpus=211 coverage=14902 exec total=8746 (10/sec) pending=0 reproducing=0 
+2025/06/27 15:17:15 candidates=0 corpus=212 coverage=14991 exec total=8823 (598/min) pending=0 reproducing=0 
+2025/06/27 15:17:25 candidates=0 corpus=212 coverage=14991 exec total=8912 (598/min) pending=0 reproducing=0 
+2025/06/27 15:17:35 candidates=0 corpus=213 coverage=14999 exec total=9009 (597/min) pending=0 reproducing=0 
+2025/06/27 15:17:45 candidates=0 corpus=214 coverage=15006 exec total=9082 (596/min) pending=0 reproducing=0 
+2025/06/27 15:17:55 candidates=0 corpus=215 coverage=15006 exec total=9169 (595/min) pending=0 reproducing=0 
+2025/06/27 15:18:05 candidates=0 corpus=215 coverage=15006 exec total=9263 (595/min) pending=0 reproducing=0 
+2025/06/27 15:18:15 candidates=0 corpus=215 coverage=15006 exec total=9352 (594/min) pending=0 reproducing=0 
+2025/06/27 15:18:25 candidates=0 corpus=215 coverage=15006 exec total=9443 (593/min) pending=0 reproducing=0 
+2025/06/27 15:18:35 candidates=0 corpus=215 coverage=15006 exec total=9523 (592/min) pending=0 reproducing=0 
+2025/06/27 15:18:45 candidates=0 corpus=217 coverage=15012 exec total=9622 (592/min) pending=0 reproducing=0 
+2025/06/27 15:18:55 candidates=0 corpus=222 coverage=15127 exec total=9738 (593/min) pending=0 reproducing=0 
+2025/06/27 15:19:05 candidates=0 corpus=222 coverage=15128 exec total=9834 (593/min) pending=0 reproducing=0 
+2025/06/27 15:19:15 candidates=0 corpus=224 coverage=15134 exec total=9919 (592/min) pending=0 reproducing=0 
+2025/06/27 15:19:25 candidates=0 corpus=226 coverage=15512 exec total=10005 (592/min) pending=0 reproducing=0 
+2025/06/27 15:19:35 candidates=0 corpus=226 coverage=15512 exec total=10094 (591/min) pending=0 reproducing=0 
+2025/06/27 15:19:45 candidates=0 corpus=228 coverage=15517 exec total=10167 (589/min) pending=0 reproducing=0 
+2025/06/27 15:19:55 candidates=0 corpus=229 coverage=15609 exec total=10257 (589/min) pending=0 reproducing=0 
+2025/06/27 15:20:05 candidates=0 corpus=229 coverage=15609 exec total=10342 (588/min) pending=0 reproducing=0 
+2025/06/27 15:20:15 candidates=0 corpus=230 coverage=15611 exec total=10432 (588/min) pending=0 reproducing=0 
+2025/06/27 15:20:25 candidates=0 corpus=233 coverage=15613 exec total=10527 (588/min) pending=0 reproducing=0 
+2025/06/27 15:20:35 candidates=0 corpus=234 coverage=15613 exec total=10598 (586/min) pending=0 reproducing=0 
+2025/06/27 15:20:45 candidates=0 corpus=235 coverage=15613 exec total=10660 (584/min) pending=0 reproducing=0 
+2025/06/27 15:20:55 candidates=0 corpus=236 coverage=15632 exec total=10735 (583/min) pending=0 reproducing=0 
+2025/06/27 15:21:05 candidates=0 corpus=236 coverage=15632 exec total=10786 (580/min) pending=0 reproducing=0 
+2025/06/27 15:21:15 candidates=0 corpus=238 coverage=15643 exec total=10857 (579/min) pending=0 reproducing=0 
+2025/06/27 15:21:25 candidates=0 corpus=238 coverage=15643 exec total=10925 (578/min) pending=0 reproducing=0 
+2025/06/27 15:21:35 candidates=0 corpus=240 coverage=15746 exec total=11009 (577/min) pending=0 reproducing=0 
+2025/06/27 15:21:45 candidates=0 corpus=240 coverage=15746 exec total=11091 (576/min) pending=0 reproducing=0 
+2025/06/27 15:21:55 candidates=0 corpus=240 coverage=15746 exec total=11170 (575/min) pending=0 reproducing=0 
+2025/06/27 15:22:05 candidates=0 corpus=243 coverage=15773 exec total=11256 (575/min) pending=0 reproducing=0 
+2025/06/27 15:22:15 candidates=0 corpus=245 coverage=15777 exec total=11316 (573/min) pending=0 reproducing=0 
+2025/06/27 15:22:25 candidates=0 corpus=245 coverage=15777 exec total=11378 (571/min) pending=0 reproducing=0 
+2025/06/27 15:22:35 candidates=0 corpus=245 coverage=15777 exec total=11426 (569/min) pending=0 reproducing=0 
+2025/06/27 15:22:45 candidates=0 corpus=247 coverage=15781 exec total=11544 (570/min) pending=0 reproducing=0 
+2025/06/27 15:22:55 candidates=0 corpus=248 coverage=15781 exec total=11610 (569/min) pending=0 reproducing=0 
+2025/06/27 15:23:05 candidates=0 corpus=247 coverage=15781 exec total=11676 (567/min) pending=0 reproducing=0 
+2025/06/27 15:23:15 candidates=0 corpus=248 coverage=15783 exec total=11771 (567/min) pending=0 reproducing=0 
+2025/06/27 15:23:25 candidates=0 corpus=249 coverage=15796 exec total=11846 (566/min) pending=0 reproducing=0 
+2025/06/27 15:23:35 candidates=0 corpus=250 coverage=15799 exec total=11935 (566/min) pending=0 reproducing=0 
+2025/06/27 15:23:45 candidates=0 corpus=252 coverage=15799 exec total=12012 (565/min) pending=0 reproducing=0 
+2025/06/27 15:23:55 candidates=0 corpus=254 coverage=15806 exec total=12071 (564/min) pending=0 reproducing=0 
+2025/06/27 15:24:05 candidates=0 corpus=254 coverage=15806 exec total=12132 (562/min) pending=0 reproducing=0 
+2025/06/27 15:24:15 candidates=0 corpus=255 coverage=15806 exec total=12204 (561/min) pending=0 reproducing=0 
+2025/06/27 15:24:25 candidates=0 corpus=255 coverage=15806 exec total=12281 (560/min) pending=0 reproducing=0 
+2025/06/27 15:24:35 candidates=0 corpus=257 coverage=15851 exec total=12355 (559/min) pending=0 reproducing=0 
+2025/06/27 15:24:45 candidates=0 corpus=257 coverage=15851 exec total=12438 (559/min) pending=0 reproducing=0 
+2025/06/27 15:24:55 candidates=0 corpus=259 coverage=15869 exec total=12506 (558/min) pending=0 reproducing=0 
+2025/06/27 15:25:05 candidates=0 corpus=259 coverage=15869 exec total=12570 (557/min) pending=0 reproducing=0 
+2025/06/27 15:25:15 candidates=0 corpus=260 coverage=15870 exec total=12635 (555/min) pending=0 reproducing=0 
+2025/06/27 15:25:25 candidates=0 corpus=260 coverage=15870 exec total=12697 (554/min) pending=0 reproducing=0 
+2025/06/27 15:25:35 candidates=0 corpus=261 coverage=15871 exec total=12757 (553/min) pending=0 reproducing=0 
+2025/06/27 15:25:45 candidates=0 corpus=261 coverage=15871 exec total=12827 (552/min) pending=0 reproducing=0 
+2025/06/27 15:25:55 candidates=0 corpus=262 coverage=15895 exec total=12883 (550/min) pending=0 reproducing=0 
+2025/06/27 15:26:05 candidates=0 corpus=262 coverage=15895 exec total=12944 (549/min) pending=0 reproducing=0 
+2025/06/27 15:26:15 candidates=0 corpus=263 coverage=15895 exec total=13006 (548/min) pending=0 reproducing=0 
+2025/06/27 15:26:17 VM 1: crash: kernel BUG in vfs_dedupe_file_range_one
+2025/06/27 15:26:17 start reproducing 'kernel BUG in vfs_dedupe_file_range_one'
+2025/06/27 15:26:17 VM 0: running for 23m23.596835901s, restarting
+2025/06/27 15:26:25 candidates=0 corpus=263 coverage=15895 exec total=13019 (544/min) pending=0 reproducing=1 
+2025/06/27 15:26:35 candidates=0 corpus=263 coverage=15895 exec total=13019 (540/min) pending=0 reproducing=1 
+2025/06/27 15:26:45 candidates=0 corpus=263 coverage=15895 exec total=13019 (537/min) pending=0 reproducing=1 
+2025/06/27 15:26:55 candidates=0 corpus=263 coverage=15895 exec total=13019 (533/min) pending=0 reproducing=1 
+2025/06/27 15:27:05 candidates=0 corpus=263 coverage=15895 exec total=13019 (529/min) pending=0 reproducing=1 
+2025/06/27 15:27:15 candidates=0 corpus=263 coverage=15895 exec total=13019 (526/min) pending=0 reproducing=1 
+2025/06/27 15:27:25 candidates=0 corpus=263 coverage=15895 exec total=13019 (522/min) pending=0 reproducing=1 
+2025/06/27 15:27:35 candidates=0 corpus=263 coverage=15895 exec total=13019 (519/min) pending=0 reproducing=1 
+2025/06/27 15:27:45 candidates=0 corpus=263 coverage=15895 exec total=13019 (515/min) pending=0 reproducing=1 
+2025/06/27 15:27:55 candidates=0 corpus=263 coverage=15895 exec total=13019 (512/min) pending=0 reproducing=1 
+2025/06/27 15:28:05 candidates=0 corpus=263 coverage=15895 exec total=13019 (509/min) pending=0 reproducing=1 
+2025/06/27 15:28:15 candidates=0 corpus=263 coverage=15895 exec total=13019 (505/min) pending=0 reproducing=1 
+2025/06/27 15:28:25 candidates=0 corpus=263 coverage=15895 exec total=13019 (502/min) pending=0 reproducing=1 
+2025/06/27 15:28:35 candidates=0 corpus=263 coverage=15895 exec total=13019 (499/min) pending=0 reproducing=1 
+2025/06/27 15:28:45 candidates=0 corpus=263 coverage=15895 exec total=13019 (496/min) pending=0 reproducing=1 
+2025/06/27 15:28:55 candidates=0 corpus=263 coverage=15895 exec total=13019 (493/min) pending=0 reproducing=1 
+2025/06/27 15:29:05 candidates=0 corpus=263 coverage=15895 exec total=13019 (490/min) pending=0 reproducing=1 
+2025/06/27 15:29:15 candidates=0 corpus=263 coverage=15895 exec total=13019 (486/min) pending=0 reproducing=1 
+2025/06/27 15:29:25 candidates=0 corpus=263 coverage=15895 exec total=13019 (483/min) pending=0 reproducing=1 
+2025/06/27 15:29:35 candidates=0 corpus=263 coverage=15895 exec total=13019 (480/min) pending=0 reproducing=1 
+2025/06/27 15:29:45 candidates=0 corpus=263 coverage=15895 exec total=13019 (478/min) pending=0 reproducing=1 
+2025/06/27 15:29:55 candidates=0 corpus=263 coverage=15895 exec total=13019 (475/min) pending=0 reproducing=1 
+2025/06/27 15:30:05 candidates=0 corpus=263 coverage=15895 exec total=13019 (472/min) pending=0 reproducing=1 
+2025/06/27 15:30:15 candidates=0 corpus=263 coverage=15895 exec total=13019 (469/min) pending=0 reproducing=1 
+2025/06/27 15:30:25 candidates=0 corpus=263 coverage=15895 exec total=13019 (466/min) pending=0 reproducing=1 
+2025/06/27 15:30:35 candidates=0 corpus=263 coverage=15895 exec total=13019 (463/min) pending=0 reproducing=1 
+2025/06/27 15:30:45 candidates=0 corpus=263 coverage=15895 exec total=13019 (461/min) pending=0 reproducing=1 
+2025/06/27 15:30:55 candidates=0 corpus=263 coverage=15895 exec total=13019 (458/min) pending=0 reproducing=1 
+2025/06/27 15:31:05 candidates=0 corpus=263 coverage=15895 exec total=13019 (455/min) pending=0 reproducing=1 
+2025/06/27 15:31:15 candidates=0 corpus=263 coverage=15895 exec total=13019 (453/min) pending=0 reproducing=1 
+2025/06/27 15:31:25 candidates=0 corpus=263 coverage=15895 exec total=13019 (450/min) pending=0 reproducing=1 
+2025/06/27 15:31:35 candidates=0 corpus=263 coverage=15895 exec total=13019 (447/min) pending=0 reproducing=1 
+2025/06/27 15:31:45 candidates=0 corpus=263 coverage=15895 exec total=13019 (445/min) pending=0 reproducing=1 
+2025/06/27 15:31:55 candidates=0 corpus=263 coverage=15895 exec total=13019 (442/min) pending=0 reproducing=1 
+2025/06/27 15:32:05 candidates=0 corpus=263 coverage=15895 exec total=13019 (440/min) pending=0 reproducing=1 
+2025/06/27 15:32:15 candidates=0 corpus=263 coverage=15895 exec total=13019 (437/min) pending=0 reproducing=1 
+2025/06/27 15:32:25 candidates=0 corpus=263 coverage=15895 exec total=13019 (435/min) pending=0 reproducing=1 
+2025/06/27 15:32:35 candidates=0 corpus=263 coverage=15895 exec total=13019 (433/min) pending=0 reproducing=1 
+2025/06/27 15:32:45 candidates=0 corpus=263 coverage=15895 exec total=13019 (430/min) pending=0 reproducing=1 
+2025/06/27 15:32:55 candidates=0 corpus=263 coverage=15895 exec total=13019 (428/min) pending=0 reproducing=1 
+2025/06/27 15:33:05 candidates=0 corpus=263 coverage=15895 exec total=13019 (425/min) pending=0 reproducing=1 
+2025/06/27 15:33:15 candidates=0 corpus=263 coverage=15895 exec total=13019 (423/min) pending=0 reproducing=1 
+2025/06/27 15:33:25 candidates=0 corpus=263 coverage=15895 exec total=13019 (421/min) pending=0 reproducing=1 
+2025/06/27 15:33:35 candidates=0 corpus=263 coverage=15895 exec total=13019 (419/min) pending=0 reproducing=1 
+2025/06/27 15:33:45 candidates=0 corpus=263 coverage=15895 exec total=13019 (416/min) pending=0 reproducing=1 
+2025/06/27 15:33:55 candidates=0 corpus=263 coverage=15895 exec total=13019 (414/min) pending=0 reproducing=1 
+2025/06/27 15:34:05 candidates=0 corpus=263 coverage=15895 exec total=13019 (412/min) pending=0 reproducing=1 
+2025/06/27 15:34:15 candidates=0 corpus=263 coverage=15895 exec total=13019 (410/min) pending=0 reproducing=1 
+2025/06/27 15:34:25 candidates=0 corpus=263 coverage=15895 exec total=13019 (408/min) pending=0 reproducing=1 
+2025/06/27 15:34:35 candidates=0 corpus=263 coverage=15895 exec total=13019 (405/min) pending=0 reproducing=1 
+2025/06/27 15:34:45 candidates=0 corpus=263 coverage=15895 exec total=13019 (403/min) pending=0 reproducing=1 
+2025/06/27 15:34:55 candidates=0 corpus=263 coverage=15895 exec total=13019 (401/min) pending=0 reproducing=1 
+2025/06/27 15:35:05 candidates=0 corpus=263 coverage=15895 exec total=13019 (399/min) pending=0 reproducing=1 
+2025/06/27 15:35:15 candidates=0 corpus=263 coverage=15895 exec total=13019 (397/min) pending=0 reproducing=1 
+2025/06/27 15:35:25 candidates=0 corpus=263 coverage=15895 exec total=13019 (395/min) pending=0 reproducing=1 
+2025/06/27 15:35:35 candidates=0 corpus=263 coverage=15895 exec total=13019 (393/min) pending=0 reproducing=1 
+2025/06/27 15:35:45 candidates=0 corpus=263 coverage=15895 exec total=13019 (391/min) pending=0 reproducing=1 
+2025/06/27 15:35:55 candidates=0 corpus=263 coverage=15895 exec total=13019 (389/min) pending=0 reproducing=1 
+2025/06/27 15:36:05 candidates=0 corpus=263 coverage=15895 exec total=13019 (387/min) pending=0 reproducing=1 
+2025/06/27 15:36:15 candidates=0 corpus=263 coverage=15895 exec total=13019 (385/min) pending=0 reproducing=1 
+2025/06/27 15:36:25 candidates=0 corpus=263 coverage=15895 exec total=13019 (384/min) pending=0 reproducing=1 
+2025/06/27 15:36:35 candidates=0 corpus=263 coverage=15895 exec total=13019 (382/min) pending=0 reproducing=1 
+2025/06/27 15:36:45 candidates=0 corpus=263 coverage=15895 exec total=13019 (380/min) pending=0 reproducing=1 
+2025/06/27 15:36:55 candidates=0 corpus=263 coverage=15895 exec total=13019 (378/min) pending=0 reproducing=1 
+2025/06/27 15:37:05 candidates=0 corpus=263 coverage=15895 exec total=13019 (376/min) pending=0 reproducing=1 
+2025/06/27 15:37:15 candidates=0 corpus=263 coverage=15895 exec total=13019 (374/min) pending=0 reproducing=1 
+2025/06/27 15:37:25 candidates=0 corpus=263 coverage=15895 exec total=13019 (373/min) pending=0 reproducing=1 
+2025/06/27 15:37:35 candidates=0 corpus=263 coverage=15895 exec total=13019 (371/min) pending=0 reproducing=1 
+2025/06/27 15:37:45 candidates=0 corpus=263 coverage=15895 exec total=13019 (369/min) pending=0 reproducing=1 
+2025/06/27 15:37:55 candidates=0 corpus=263 coverage=15895 exec total=13019 (367/min) pending=0 reproducing=1 
+2025/06/27 15:38:05 candidates=0 corpus=263 coverage=15895 exec total=13019 (366/min) pending=0 reproducing=1 
+2025/06/27 15:38:15 candidates=0 corpus=263 coverage=15895 exec total=13019 (364/min) pending=0 reproducing=1 
+2025/06/27 15:38:25 candidates=0 corpus=263 coverage=15895 exec total=13019 (362/min) pending=0 reproducing=1 
+2025/06/27 15:38:35 candidates=0 corpus=263 coverage=15895 exec total=13019 (360/min) pending=0 reproducing=1 
+2025/06/27 15:38:45 candidates=0 corpus=263 coverage=15895 exec total=13019 (359/min) pending=0 reproducing=1 
+2025/06/27 15:38:55 candidates=0 corpus=263 coverage=15895 exec total=13019 (357/min) pending=0 reproducing=1 
+2025/06/27 15:39:05 candidates=0 corpus=263 coverage=15895 exec total=13019 (356/min) pending=0 reproducing=1 
+2025/06/27 15:39:15 candidates=0 corpus=263 coverage=15895 exec total=13019 (354/min) pending=0 reproducing=1 
+2025/06/27 15:39:25 candidates=0 corpus=263 coverage=15895 exec total=13019 (352/min) pending=0 reproducing=1 
+2025/06/27 15:39:35 candidates=0 corpus=263 coverage=15895 exec total=13019 (351/min) pending=0 reproducing=1 
+2025/06/27 15:39:45 candidates=0 corpus=263 coverage=15895 exec total=13019 (349/min) pending=0 reproducing=1 
+2025/06/27 15:39:55 candidates=0 corpus=263 coverage=15895 exec total=13019 (348/min) pending=0 reproducing=1 
+2025/06/27 15:40:05 candidates=0 corpus=263 coverage=15895 exec total=13019 (346/min) pending=0 reproducing=1 
+2025/06/27 15:40:15 candidates=0 corpus=263 coverage=15895 exec total=13019 (345/min) pending=0 reproducing=1 
+2025/06/27 15:40:25 candidates=0 corpus=263 coverage=15895 exec total=13019 (343/min) pending=0 reproducing=1 
+2025/06/27 15:40:35 candidates=0 corpus=263 coverage=15895 exec total=13019 (342/min) pending=0 reproducing=1 
+2025/06/27 15:40:45 candidates=0 corpus=263 coverage=15895 exec total=13019 (340/min) pending=0 reproducing=1 
+2025/06/27 15:40:55 candidates=0 corpus=263 coverage=15895 exec total=13019 (339/min) pending=0 reproducing=1 
+2025/06/27 15:41:05 candidates=0 corpus=263 coverage=15895 exec total=13019 (337/min) pending=0 reproducing=1 
+2025/06/27 15:41:15 candidates=0 corpus=263 coverage=15895 exec total=13019 (336/min) pending=0 reproducing=1 
+2025/06/27 15:41:25 candidates=0 corpus=263 coverage=15895 exec total=13019 (334/min) pending=0 reproducing=1 
+2025/06/27 15:41:35 candidates=0 corpus=263 coverage=15895 exec total=13019 (333/min) pending=0 reproducing=1 
+2025/06/27 15:41:43 repro finished 'kernel BUG in vfs_dedupe_file_range_one', repro=true crepro=true desc='kernel BUG in vfs_dedupe_file_range_one' hub=false from_dashboard=false
+2025/06/27 15:41:45 candidates=0 corpus=263 coverage=15895 exec total=13019 (331/min) pending=0 reproducing=0 
+2025/06/27 15:41:55 candidates=0 corpus=263 coverage=15895 exec total=13039 (330/min) pending=0 reproducing=0 
+2025/06/27 15:41:59 VM 1: crash: kernel BUG in vfs_dedupe_file_range_one
+2025/06/27 15:42:05 candidates=0 corpus=264 coverage=15895 exec total=13081 (330/min) pending=0 reproducing=0 
+2025/06/27 15:42:15 candidates=0 corpus=268 coverage=15901 exec total=13156 (331/min) pending=0 reproducing=0 
+2025/06/27 15:42:25 candidates=0 corpus=269 coverage=15944 exec total=13233 (331/min) pending=0 reproducing=0 
+2025/06/27 15:42:35 candidates=0 corpus=269 coverage=15944 exec total=13301 (331/min) pending=0 reproducing=0 
+2025/06/27 15:42:45 candidates=0 corpus=270 coverage=15945 exec total=13377 (332/min) pending=0 reproducing=0 
+2025/06/27 15:42:55 candidates=0 corpus=271 coverage=15946 exec total=13459 (333/min) pending=0 reproducing=0 
+2025/06/27 15:43:05 candidates=0 corpus=272 coverage=15947 exec total=13532 (333/min) pending=0 reproducing=0 
+2025/06/27 15:43:15 candidates=0 corpus=273 coverage=15949 exec total=13614 (334/min) pending=0 reproducing=0 
+2025/06/27 15:43:25 candidates=0 corpus=274 coverage=15949 exec total=13686 (334/min) pending=0 reproducing=0 
+2025/06/27 15:43:35 candidates=0 corpus=274 coverage=15949 exec total=13761 (335/min) pending=0 reproducing=0 
+2025/06/27 15:43:45 candidates=0 corpus=276 coverage=15953 exec total=13843 (335/min) pending=0 reproducing=0 
+2025/06/27 15:43:55 candidates=0 corpus=276 coverage=15953 exec total=13907 (335/min) pending=0 reproducing=0 
+2025/06/27 15:44:01 VM 1: crash: WARNING in btrfs_destroy_inode
+2025/06/27 15:44:01 start reproducing 'WARNING in btrfs_destroy_inode'
+2025/06/27 15:44:01 VM 0: running for 2m8.6270141s, restarting
+2025/06/27 15:44:05 candidates=0 corpus=276 coverage=15953 exec total=13944 (335/min) pending=0 reproducing=1 
+2025/06/27 15:44:15 candidates=0 corpus=276 coverage=15953 exec total=13944 (334/min) pending=0 reproducing=1 
+2025/06/27 15:44:25 candidates=0 corpus=276 coverage=15953 exec total=13944 (332/min) pending=0 reproducing=1 
+2025/06/27 15:44:35 candidates=0 corpus=276 coverage=15953 exec total=13944 (331/min) pending=0 reproducing=1 
+2025/06/27 15:44:45 candidates=0 corpus=276 coverage=15953 exec total=13944 (330/min) pending=0 reproducing=1 
+2025/06/27 15:44:55 candidates=0 corpus=276 coverage=15953 exec total=13944 (328/min) pending=0 reproducing=1 
+2025/06/27 15:45:05 candidates=0 corpus=276 coverage=15953 exec total=13944 (327/min) pending=0 reproducing=1 
+2025/06/27 15:45:15 candidates=0 corpus=276 coverage=15953 exec total=13944 (326/min) pending=0 reproducing=1 
+2025/06/27 15:45:25 candidates=0 corpus=276 coverage=15953 exec total=13944 (325/min) pending=0 reproducing=1 
+2025/06/27 15:45:35 candidates=0 corpus=276 coverage=15953 exec total=13944 (323/min) pending=0 reproducing=1 
+2025/06/27 15:45:45 candidates=0 corpus=276 coverage=15953 exec total=13944 (322/min) pending=0 reproducing=1 
+2025/06/27 15:45:55 candidates=0 corpus=276 coverage=15953 exec total=13944 (321/min) pending=0 reproducing=1 
+2025/06/27 15:46:05 candidates=0 corpus=276 coverage=15953 exec total=13944 (320/min) pending=0 reproducing=1 
+2025/06/27 15:46:15 candidates=0 corpus=276 coverage=15953 exec total=13944 (318/min) pending=0 reproducing=1 
+2025/06/27 15:46:25 candidates=0 corpus=276 coverage=15953 exec total=13944 (317/min) pending=0 reproducing=1 
+2025/06/27 15:46:35 candidates=0 corpus=276 coverage=15953 exec total=13944 (316/min) pending=0 reproducing=1 
+2025/06/27 15:46:45 candidates=0 corpus=276 coverage=15953 exec total=13944 (315/min) pending=0 reproducing=1 
+2025/06/27 15:46:55 candidates=0 corpus=276 coverage=15953 exec total=13944 (314/min) pending=0 reproducing=1 
+2025/06/27 15:47:05 candidates=0 corpus=276 coverage=15953 exec total=13944 (312/min) pending=0 reproducing=1 
+2025/06/27 15:47:15 candidates=0 corpus=276 coverage=15953 exec total=13944 (311/min) pending=0 reproducing=1 
+2025/06/27 15:47:25 candidates=0 corpus=276 coverage=15953 exec total=13944 (310/min) pending=0 reproducing=1 
+2025/06/27 15:47:35 candidates=0 corpus=276 coverage=15953 exec total=13944 (309/min) pending=0 reproducing=1 
+2025/06/27 15:47:45 candidates=0 corpus=276 coverage=15953 exec total=13944 (308/min) pending=0 reproducing=1 
+2025/06/27 15:47:55 candidates=0 corpus=276 coverage=15953 exec total=13944 (307/min) pending=0 reproducing=1 
+2025/06/27 15:48:05 candidates=0 corpus=276 coverage=15953 exec total=13944 (306/min) pending=0 reproducing=1 
+2025/06/27 15:48:15 candidates=0 corpus=276 coverage=15953 exec total=13944 (304/min) pending=0 reproducing=1 
+2025/06/27 15:48:25 candidates=0 corpus=276 coverage=15953 exec total=13944 (303/min) pending=0 reproducing=1 
+2025/06/27 15:48:35 candidates=0 corpus=276 coverage=15953 exec total=13944 (302/min) pending=0 reproducing=1 
+2025/06/27 15:48:45 candidates=0 corpus=276 coverage=15953 exec total=13944 (301/min) pending=0 reproducing=1 
+2025/06/27 15:48:55 candidates=0 corpus=276 coverage=15953 exec total=13944 (300/min) pending=0 reproducing=1 
+2025/06/27 15:49:05 candidates=0 corpus=276 coverage=15953 exec total=13944 (299/min) pending=0 reproducing=1 
+2025/06/27 15:49:15 candidates=0 corpus=276 coverage=15953 exec total=13944 (298/min) pending=0 reproducing=1 
+2025/06/27 15:49:25 candidates=0 corpus=276 coverage=15953 exec total=13944 (297/min) pending=0 reproducing=1 
+2025/06/27 15:49:35 candidates=0 corpus=276 coverage=15953 exec total=13944 (296/min) pending=0 reproducing=1 
+2025/06/27 15:49:45 candidates=0 corpus=276 coverage=15953 exec total=13944 (295/min) pending=0 reproducing=1 
+2025/06/27 15:49:55 candidates=0 corpus=276 coverage=15953 exec total=13944 (294/min) pending=0 reproducing=1 
+2025/06/27 15:50:05 candidates=0 corpus=276 coverage=15953 exec total=13944 (293/min) pending=0 reproducing=1 
+2025/06/27 15:50:15 candidates=0 corpus=276 coverage=15953 exec total=13944 (292/min) pending=0 reproducing=1 
+2025/06/27 15:50:25 candidates=0 corpus=276 coverage=15953 exec total=13944 (291/min) pending=0 reproducing=1 
+2025/06/27 15:50:35 candidates=0 corpus=276 coverage=15953 exec total=13944 (290/min) pending=0 reproducing=1 
+2025/06/27 15:50:45 candidates=0 corpus=276 coverage=15953 exec total=13944 (289/min) pending=0 reproducing=1 
+2025/06/27 15:50:55 candidates=0 corpus=276 coverage=15953 exec total=13944 (288/min) pending=0 reproducing=1 
+2025/06/27 15:51:05 candidates=0 corpus=276 coverage=15953 exec total=13944 (287/min) pending=0 reproducing=1 
+2025/06/27 15:51:15 candidates=0 corpus=276 coverage=15953 exec total=13944 (286/min) pending=0 reproducing=1 
+2025/06/27 15:51:25 candidates=0 corpus=276 coverage=15953 exec total=13944 (285/min) pending=0 reproducing=1 
+2025/06/27 15:51:35 candidates=0 corpus=276 coverage=15953 exec total=13944 (284/min) pending=0 reproducing=1 
+2025/06/27 15:51:45 candidates=0 corpus=276 coverage=15953 exec total=13944 (283/min) pending=0 reproducing=1 
+2025/06/27 15:51:55 candidates=0 corpus=276 coverage=15953 exec total=13944 (282/min) pending=0 reproducing=1 
+2025/06/27 15:52:05 candidates=0 corpus=276 coverage=15953 exec total=13944 (281/min) pending=0 reproducing=1 
+2025/06/27 15:52:15 candidates=0 corpus=276 coverage=15953 exec total=13944 (280/min) pending=0 reproducing=1 
+2025/06/27 15:52:25 candidates=0 corpus=276 coverage=15953 exec total=13944 (279/min) pending=0 reproducing=1 
+2025/06/27 15:52:35 candidates=0 corpus=276 coverage=15953 exec total=13944 (278/min) pending=0 reproducing=1 
+2025/06/27 15:52:45 candidates=0 corpus=276 coverage=15953 exec total=13944 (277/min) pending=0 reproducing=1 
+2025/06/27 15:52:55 candidates=0 corpus=276 coverage=15953 exec total=13944 (276/min) pending=0 reproducing=1 
+2025/06/27 15:53:05 candidates=0 corpus=276 coverage=15953 exec total=13944 (275/min) pending=0 reproducing=1 
+2025/06/27 15:53:15 candidates=0 corpus=276 coverage=15953 exec total=13944 (274/min) pending=0 reproducing=1 
+2025/06/27 15:53:25 candidates=0 corpus=276 coverage=15953 exec total=13944 (273/min) pending=0 reproducing=1 
+2025/06/27 15:53:35 candidates=0 corpus=276 coverage=15953 exec total=13944 (273/min) pending=0 reproducing=1 
+2025/06/27 15:53:45 candidates=0 corpus=276 coverage=15953 exec total=13944 (272/min) pending=0 reproducing=1 
+2025/06/27 15:53:55 candidates=0 corpus=276 coverage=15953 exec total=13944 (271/min) pending=0 reproducing=1 
+2025/06/27 15:54:05 candidates=0 corpus=276 coverage=15953 exec total=13944 (270/min) pending=0 reproducing=1 
+2025/06/27 15:54:07 repro finished 'WARNING in btrfs_destroy_inode', repro=true crepro=true desc='WARNING in btrfs_destroy_inode' hub=false from_dashboard=false
+2025/06/27 15:54:15 candidates=0 corpus=276 coverage=15953 exec total=13980 (270/min) pending=0 reproducing=0 
+2025/06/27 15:54:25 candidates=0 corpus=277 coverage=15975 exec total=14076 (271/min) pending=0 reproducing=0 
+2025/06/27 15:54:35 candidates=0 corpus=278 coverage=15981 exec total=14149 (271/min) pending=0 reproducing=0 
+2025/06/27 15:54:45 candidates=0 corpus=279 coverage=15993 exec total=14223 (272/min) pending=0 reproducing=0 
+2025/06/27 15:54:55 candidates=0 corpus=280 coverage=16001 exec total=14305 (272/min) pending=0 reproducing=0 
+2025/06/27 15:55:05 candidates=0 corpus=277 coverage=16001 exec total=14392 (273/min) pending=0 reproducing=0 
+2025/06/27 15:55:15 candidates=0 corpus=279 coverage=16004 exec total=14481 (274/min) pending=0 reproducing=0 
+2025/06/27 15:55:25 candidates=0 corpus=281 coverage=16006 exec total=14549 (275/min) pending=0 reproducing=0 
+2025/06/27 15:55:35 candidates=0 corpus=282 coverage=16014 exec total=14630 (275/min) pending=0 reproducing=0 
+2025/06/27 15:55:45 candidates=0 corpus=282 coverage=16014 exec total=14695 (276/min) pending=0 reproducing=0 
+2025/06/27 15:55:55 candidates=0 corpus=282 coverage=16014 exec total=14757 (276/min) pending=0 reproducing=0 
+2025/06/27 15:56:05 candidates=0 corpus=283 coverage=16029 exec total=14816 (276/min) pending=0 reproducing=0 
+2025/06/27 15:56:15 candidates=0 corpus=283 coverage=16029 exec total=14889 (277/min) pending=0 reproducing=0 
+2025/06/27 15:56:25 candidates=0 corpus=283 coverage=16029 exec total=14952 (277/min) pending=0 reproducing=0 
+2025/06/27 15:56:35 candidates=0 corpus=285 coverage=16128 exec total=15027 (277/min) pending=0 reproducing=0 
+2025/06/27 15:56:45 candidates=0 corpus=286 coverage=16133 exec total=15086 (278/min) pending=0 reproducing=0 
+2025/06/27 15:56:55 candidates=0 corpus=287 coverage=16136 exec total=15168 (278/min) pending=0 reproducing=0 
+2025/06/27 15:57:05 candidates=0 corpus=285 coverage=16136 exec total=15237 (279/min) pending=0 reproducing=0 
+2025/06/27 15:57:15 candidates=0 corpus=286 coverage=16136 exec total=15309 (279/min) pending=0 reproducing=0 
+2025/06/27 15:57:25 candidates=0 corpus=288 coverage=16142 exec total=15384 (280/min) pending=0 reproducing=0 
+2025/06/27 15:57:35 candidates=0 corpus=288 coverage=16142 exec total=15444 (280/min) pending=0 reproducing=0 
+2025/06/27 15:57:45 candidates=0 corpus=289 coverage=16143 exec total=15510 (280/min) pending=0 reproducing=0 
+2025/06/27 15:57:55 candidates=0 corpus=290 coverage=16189 exec total=15581 (281/min) pending=0 reproducing=0 
+2025/06/27 15:58:05 candidates=0 corpus=290 coverage=16189 exec total=15655 (281/min) pending=0 reproducing=0 
+2025/06/27 15:58:15 candidates=0 corpus=290 coverage=16189 exec total=15714 (281/min) pending=0 reproducing=0 
+2025/06/27 15:58:25 candidates=0 corpus=291 coverage=16190 exec total=15784 (282/min) pending=0 reproducing=0 
+2025/06/27 15:58:35 candidates=0 corpus=291 coverage=16190 exec total=15846 (282/min) pending=0 reproducing=0 
+2025/06/27 15:58:45 candidates=0 corpus=292 coverage=16195 exec total=15904 (282/min) pending=0 reproducing=0 
+2025/06/27 15:58:54 VM 1: crash: WARNING in btrfs_destroy_inode
+2025/06/27 15:58:55 candidates=0 corpus=292 coverage=16195 exec total=15944 (282/min) pending=0 reproducing=0 
+2025/06/27 15:59:05 candidates=0 corpus=292 coverage=16195 exec total=16002 (282/min) pending=0 reproducing=0 
+2025/06/27 15:59:15 candidates=0 corpus=294 coverage=16200 exec total=16066 (283/min) pending=0 reproducing=0 
+2025/06/27 15:59:25 candidates=0 corpus=294 coverage=16200 exec total=16124 (283/min) pending=0 reproducing=0 
+2025/06/27 15:59:35 candidates=0 corpus=294 coverage=16200 exec total=16195 (283/min) pending=0 reproducing=0 
+2025/06/27 15:59:45 candidates=0 corpus=296 coverage=16200 exec total=16270 (284/min) pending=0 reproducing=0 
+2025/06/27 15:59:55 candidates=0 corpus=297 coverage=16289 exec total=16326 (284/min) pending=0 reproducing=0 
+2025/06/27 16:00:05 candidates=0 corpus=297 coverage=16289 exec total=16385 (284/min) pending=0 reproducing=0 
+2025/06/27 16:00:15 candidates=0 corpus=298 coverage=16291 exec total=16431 (284/min) pending=0 reproducing=0 
+2025/06/27 16:00:21 VM 0: crash: WARNING in btrfs_destroy_inode
+2025/06/27 16:00:25 candidates=0 corpus=298 coverage=16291 exec total=16474 (284/min) pending=0 reproducing=0 
+2025/06/27 16:00:35 candidates=0 corpus=298 coverage=16291 exec total=16510 (284/min) pending=0 reproducing=0 
+2025/06/27 16:00:45 candidates=0 corpus=299 coverage=16292 exec total=16563 (284/min) pending=0 reproducing=0 
+2025/06/27 16:00:55 candidates=0 corpus=299 coverage=16292 exec total=16615 (284/min) pending=0 reproducing=0 
+2025/06/27 16:01:05 candidates=0 corpus=300 coverage=16294 exec total=16666 (284/min) pending=0 reproducing=0 
+2025/06/27 16:01:15 candidates=0 corpus=301 coverage=16294 exec total=16729 (284/min) pending=0 reproducing=0 
+2025/06/27 16:01:25 candidates=0 corpus=302 coverage=16294 exec total=16779 (284/min) pending=0 reproducing=0 
+2025/06/27 16:01:35 candidates=0 corpus=302 coverage=16294 exec total=16842 (285/min) pending=0 reproducing=0 
+2025/06/27 16:01:45 candidates=0 corpus=302 coverage=16294 exec total=16907 (285/min) pending=0 reproducing=0 
+2025/06/27 16:01:55 candidates=0 corpus=303 coverage=16294 exec total=16975 (285/min) pending=0 reproducing=0 
+2025/06/27 16:02:05 candidates=0 corpus=303 coverage=16294 exec total=17037 (286/min) pending=0 reproducing=0 
+2025/06/27 16:02:15 candidates=0 corpus=305 coverage=16295 exec total=17091 (286/min) pending=0 reproducing=0 
