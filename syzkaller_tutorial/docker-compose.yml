@@ -1,6 +1,6 @@
 services:
   syzkaller:
-    build: .
+    image: gcr.io/syzkaller/env
     container_name: syzkaller
     stdin_open: true 
     tty: true
