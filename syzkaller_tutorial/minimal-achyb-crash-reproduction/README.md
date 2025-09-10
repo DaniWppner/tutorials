@@ -1,6 +1,6 @@
 # Steps to reproduce a crash due to an introduced bug in linux v4.19.192:
 
-Follow the same steps as [here](https://github.com/DaniWppner/Gtest-LLVM-tutorials/tree/main/syzkaller%20tutorial/minimal-bug-reproduction), with the following changes:
+Follow the same steps as [here](https://github.com/DaniWppner/tutorials/tree/main/syzkaller_tutorial/minimal-bug-reproduction), with the following changes:
 
 - checkout v4.19.192 in the linux repository
 - when compiling the linux kernel specify gcc-9 with the `CC` and `HOSTCC` flags in the `make` command:
