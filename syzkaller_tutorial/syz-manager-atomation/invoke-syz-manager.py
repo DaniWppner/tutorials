@@ -53,23 +53,44 @@ def check_working_tree(work_dir: Path, expected_files: dict[Path, str]):
             f"You should probably choose a different workdir name."
         )
 
+    errors = []
     for fpath, expected_content in expected_files.items():
         if not fpath.exists():
-            raise ReproductionError(
-                f"Expected reproduction file {fpath} in existing {repro_dir}, but it was missing."
-            )
+            errors.append(f"Expected reproduction file {fpath} in existing {repro_dir}, but it was missing.")
+            continue
+
         content = fpath.read_text()
         if content != expected_content:
-            raise ReproductionError(
+            errors.append(
                 f"Existing reproduction file in {fpath} doesn't match expected contents.\n"
             )
 
+    if errors:
+        raise ReproductionError("\n".join(errors))
+
     print(f"[ok] Working tree {work_dir} contains valid existing reproduction package.")
+
+def write_repro_package(repro_dir: Path, expected_files: dict[Path, str]):
+    """
+    Write reproduction package files into repro_dir.
+    """
+    for fpath, content in expected_files.items():
+        fpath.write_text(content)
+        print(f"[ok] Write reproduction file: {fpath} ({len(content)} bytes)")
 
 
 def run_syz_manager(syzkaller_src: Path, cfg_path: Path, log_file: Path):
-    """Run syz-manager with -vv 10 and the given config, logging output."""
-    raise NotImplementedError
+    """Run syz-manager with -vv 10 and the given config, redirecting output with tee."""
+    syz_manager_bin = syzkaller_src / "bin" / "syz-manager"
+    if not syz_manager_bin.exists():
+        raise RuntimeError(f"Expected syz-manager binary at {syz_manager_bin}, but it was missing. Forgot to compile?")
+
+    print(f"running {cmd}")
+    cmd = f"{syz_manager_bin} -vv 10 -config {cfg_path} 2>&1 | tee {log_file}"
+
+    # Hand over execution: replace current process with syz-manager+tee
+    os.execvp("bash", ["bash", "-c", cmd])
+
 
 
 def main():
@@ -101,14 +122,10 @@ def main():
     if work_dir.exists():
         check_working_tree(work_dir, expected_files)
     else:
-        work_dir.mkdir(parents=True)
-        repro_dir.mkdir(parents=True)
+        work_dir.mkdir(parents=False)
+        repro_dir.mkdir(parents=False)
+        write_repro_package(repro_dir, expected_files)
 
-        # Save expected contents into files
-        for fpath, content in expected_files.items():
-            fpath.write_text(content)
-
-    # Run syz-manager
     log_file = work_dir / "syz-manager.log"
     run_syz_manager(Path(args.syzkaller_src), real_cfg, log_file)
 
@@ -117,5 +134,5 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except ReproductionError as e:
-        print(f"[error] {e}", file=sys.stderr)
+        print(f"[ReproductionError] workdir already exists but there's a mismatch in the expected reproduction package: {e}", file=sys.stderr)
         sys.exit(1)
