@@ -19,6 +19,16 @@ SYZ_MANAGER_BIN_RELATIVE_PATH = ["bin", "syz-manager"]
 BZIMAGE_RELATIVE_PATH = ["arch", "x86", "boot", "bzImage"]
 
 
+def color_diff_line(line: str) -> str:
+    if line.startswith('+') and not line.startswith('+++'):
+        return f'\033[32m{line}\033[0m'  # Green
+    elif line.startswith('-') and not line.startswith('---'):
+        return f'\033[31m{line}\033[0m'  # Red
+    elif line.startswith('@'):
+        return f'\033[36m{line}\033[0m'  # Cyan
+    else:
+        return line
+
 class ReproductionError(Exception):
     """Raised when the reproduction package is invalid or inconsistent."""
     pass
@@ -131,7 +141,9 @@ def check_working_tree(work_dir: Path, expected_files: dict[Path, str]):
             f"You should probably choose a different workdir name."
         )
 
+    MAX_CONFIG_DIFF_LINES = 10
     errors = []
+
     for fpath, expected_content in expected_files.items():
         if not fpath.exists():
             errors.append(f"Expected reproduction file {fpath} in existing {repro_dir}, but it was missing.")
@@ -139,39 +151,41 @@ def check_working_tree(work_dir: Path, expected_files: dict[Path, str]):
 
         content = fpath.read_text()
         if content != expected_content:
-            errors.append(
-                f"{fpath} doesn't match expected contents.\n"
-            )
+            diff = list(difflib.unified_diff(
+                expected_content.splitlines(),
+                content.splitlines(),
+                fromfile='expected',
+                tofile='actual',
+                lineterm=''
+            ))
+            if fpath.name == LINUX_CONFIG_FILENAME:
+                if len(diff) > MAX_CONFIG_DIFF_LINES:
+                    errors.append(f"File {fpath} differs from expected contents. Diff too large to display ({len(diff)} lines).")
+                else:
+                    diff_lines = [color_diff_line(l) for l in diff]
+                    diff_str = '\n'.join(diff_lines)
+                    errors.append(f"File {fpath} differs from expected contents. Diff:\n{diff_str}\n")
+            else:
+                diff_lines = [color_diff_line(l) for l in diff]
+                diff_str = '\n'.join(diff_lines)
+                errors.append(f"File {fpath} differs from expected contents. Diff:\n{diff_str}\n")
 
     if errors:
         raise ReproductionError("\n".join(errors))
 
-                import difflib
-                MAX_DIFF_LINES = 100
-                for fpath, expected_content in expected_files.items():
-                    if not fpath.exists():
-                        errors.append(f"Expected reproduction file {fpath} in existing {repro_dir}, but it was missing.")
-                        continue
+    if errors:
+        raise ReproductionError("\n".join(errors))
 
-                    content = fpath.read_text()
-                    if content != expected_content:
-                        diff = list(difflib.unified_diff(
-                            expected_content.splitlines(),
-                            content.splitlines(),
-                            fromfile='expected',
-                            tofile='actual',
-                            lineterm=''
-                        ))
-                        if len(diff) <= MAX_DIFF_LINES:
-                            diff_str = '\n'.join(diff)
-                            errors.append(
-                                f"File {fpath} differs from expected contents. Diff:\n{diff_str}\n"
-                            )
-                        else:
-                            errors.append(
-                                f"File {fpath} differs from expected contents. Diff too large to display ({len(diff)} lines)."
-                            )
+    print(f"[ok] Working tree {work_dir} contains valid existing reproduction package.")
 
+
+def write_repro_package(repro_dir: Path, expected_files: dict[Path, str]):
+    """
+    Write reproduction package files into repro_dir.
+    """
+    for fpath, content in expected_files.items():
+        fpath.write_text(content)
+        print(f"[write] {fpath} ({len(content)} bytes)")
 
     print(f"[ok] Working tree {repro_dir.parent} created with fresh reproduction package.")
 
