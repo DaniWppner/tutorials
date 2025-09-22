@@ -10,10 +10,10 @@ import difflib
 
 # Constants for hardcoded paths and filenames
 REPRO_PACKAGE_DIRNAME = "repro_package"
-REAL_CFG_FILENAME = "real.cfg"
-LINUX_CONFIG_FILENAME = "linux.config"
-LINUX_COMMIT_FILENAME = "linux_commit.txt"
-SYZKALLER_COMMIT_FILENAME = "syzkaller_commit.txt"
+REAL_CFG_FILENAME = "syzkaller.cfg"
+LINUX_CONFIG_FILENAME = ".config"
+LINUX_COMMIT_FILENAME = "linux_commit.json"
+SYZKALLER_COMMIT_FILENAME = "syzkaller_commit.json"
 SYZ_MANAGER_LOG_FILENAME = "syz-manager.log"
 SYZ_MANAGER_BIN_RELATIVE_PATH = ["bin", "syz-manager"]
 BZIMAGE_RELATIVE_PATH = ["arch", "x86", "boot", "bzImage"]
@@ -179,7 +179,17 @@ def run_syz_manager(syzkaller_src: Path, cfg_path: Path, log_file: Path):
     if not syz_manager_bin.exists():
         raise RuntimeError(f"Expected syz-manager binary at {syz_manager_bin}, but it was missing. Forgot to compile?")
 
-    cmd = f"{syz_manager_bin} -vv 10 -config {cfg_path} 2>&1 | tee {log_file}"
+    # If log_file exists, append an increasing number to the filename
+    base = log_file.stem
+    ext = log_file.suffix
+    parent = log_file.parent
+    candidate = log_file
+    counter = 1
+    while candidate.exists():
+        candidate = parent / f"{base}_{counter}{ext}"
+        counter += 1
+
+    cmd = f"{syz_manager_bin} -vv 10 -config {cfg_path} 2>&1 | tee {candidate}"
     print(f"running {cmd}")
 
     # Hand over execution: replace current process with syz-manager+tee
