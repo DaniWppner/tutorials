@@ -177,7 +177,7 @@ def run_syz_manager(syzkaller_src: Path, cfg_path: Path, log_file: Path):
     for part in SYZ_MANAGER_BIN_RELATIVE_PATH:
         syz_manager_bin = syz_manager_bin / part
     if not syz_manager_bin.exists():
-        raise RuntimeError(f"Expected syz-manager binary at {syz_manager_bin}, but it was missing. Forgot to compile?")
+        raise ConfigurationError(f"Expected syz-manager binary at {syz_manager_bin}, but it was missing. Forgot to compile?")
 
     # If log_file exists, append an increasing number to the filename
     base = log_file.stem
@@ -245,5 +245,5 @@ if __name__ == "__main__":
         print(f"[ReproductionError] workdir already exists but there's a mismatch in the expected reproduction package: \n{e}", file=sys.stderr)
         sys.exit(1)
     except ConfigurationError as e:
-        print(f"[ConfigurationError] some files expected to be able to create a reproduction package (and run syzkaller) are missing or incorrect: \n{e}", file=sys.stderr)
+        print(f"[ConfigurationError] some files expected to be able to run syzkaller are missing or incorrect: \n{e}", file=sys.stderr)
         sys.exit(1)
