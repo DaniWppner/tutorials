@@ -82,49 +82,29 @@ def get_linux_config(linux_src: Path) -> str:
     return cfg_path.read_text()
 
 
-
-def get_linux_commit(linux_src: Path) -> dict[str, str]:
+def get_last_commit(repo_source_root: Path) -> dict[str, str]:
     """
-    Return last commit info from the Linux tree.
-    """
-    commit_hash = subprocess.check_output(
-        ["git", "-C", str(linux_src), "rev-parse", "HEAD"],
-        text=True
-    )
-
-    commit_msg = subprocess.check_output(
-        ["git", "-C", str(linux_src), "log", "-1", "--pretty=%s"],
-        text=True
-    )
-
-    return {
-        "hash": commit_hash,
-        "message": commit_msg,
-    }
-
-def get_syzkaller_commit(syzkaller_src: Path) -> dict[str, str]:
-    """
-    Return last commit info from the Syzkaller tree.
+    Return last commit info from the github repo.
     """
     commit_hash = subprocess.check_output(
-        ["git", "-C", str(syzkaller_src), "rev-parse", "HEAD"], text=True
-    )
+        ["git", "-C", str(repo_source_root), "rev-parse", "HEAD"], text=True
+    ).strip()
 
     commit_msg = subprocess.check_output(
-        ["git", "-C", str(syzkaller_src), "log", "-1", "--pretty=%s"], text=True
-    )
+        ["git", "-C", str(repo_source_root), "log", "-1", "--pretty=%s"], text=True
+    ).strip()
 
     branch = subprocess.check_output(
-        ["git", "-C", str(syzkaller_src), "rev-parse", "--abbrev-ref", "HEAD"], text=True
+        ["git", "-C", str(repo_source_root), "rev-parse", "--abbrev-ref", "HEAD"], text=True
     ).strip()
 
     remote_name = subprocess.check_output(
-        ["git", "-C", str(syzkaller_src), "config", f"branch.{branch}.remote"], text=True
+        ["git", "-C", str(repo_source_root), "config", f"branch.{branch}.remote"], text=True
     ).strip()
 
     remote_url = subprocess.check_output(
-        ["git", "-C", str(syzkaller_src), "remote", "get-url", remote_name], text=True
-    )
+        ["git", "-C", str(repo_source_root), "remote", "get-url", remote_name], text=True
+    ).strip()
 
     return {"hash": commit_hash, "message": commit_msg, "branch": branch, "remote": remote_url}
 
@@ -227,14 +207,14 @@ def main():
         Path(args.linux_src)
     )
     expected_linux_config = get_linux_config(Path(args.linux_src))
-    expected_linux_commit = get_linux_commit(Path(args.linux_src))
-    expected_syzkaller_commit = get_syzkaller_commit(Path(args.syzkaller_src))
+    expected_linux_commit = get_last_commit(Path(args.linux_src))
+    expected_syzkaller_commit = get_last_commit(Path(args.syzkaller_src))
 
     expected_files : dict[Path,str] = {
         real_cfg: expected_real_cfg,
         linux_config_file: expected_linux_config,
-        linux_commit_file: json.dumps(expected_linux_commit),
-        syzkaller_commit_file: json.dumps(expected_syzkaller_commit),
+        linux_commit_file: json.dumps(expected_linux_commit, indent=4),
+        syzkaller_commit_file: json.dumps(expected_syzkaller_commit, indent=4),
     }
 
     if work_dir.exists():
