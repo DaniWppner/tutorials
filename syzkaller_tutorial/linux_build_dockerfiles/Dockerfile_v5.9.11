@@ -1,0 +1,22 @@
+# This Dockerfile is meant to provide an environment to compile the linux kernel v5.9.11 or similar
+
+FROM ubuntu:focal-20201008
+# Based on sample Dockerfile by LLVM Developers and syz-env Dockerfile from Syzkaller project.
+LABEL maintainer="danielituswapp@gmail.com"
+
+# Install build dependencies of LLVM.
+# Update the apt's source list and include the sources of the packages.
+RUN grep deb /etc/apt/sources.list | \
+    sed 's/^deb/deb-src /g' >> /etc/apt/sources.list
+
+# Install compiler, python, subversion, c++ libraries and wget,curl,etc. utilities.
+RUN TZ=AR DEBIAN_FRONTEND=noninteractive http_proxy=http://proxy.fcen.uba.ar:8080 HTTP_PROXY=http://proxy.fcen.uba.ar:8080 apt-get update && \
+    TZ=AR DEBIAN_FRONTEND=noninteractive http_proxy=http://proxy.fcen.uba.ar:8080 HTTP_PROXY=http://proxy.fcen.uba.ar:8080 apt-get install -y --no-install-recommends \
+	   ca-certificates gnupg \
+           # These are needed to build LLVM
+           build-essential cmake make zlib1g wget subversion unzip git \
+           # These are needed to build Linux kernel
+           flex bison bc libelf-dev libssl-dev
+
+# Clean apt-get data
+RUN rm -rf /var/lib/apt/lists/*

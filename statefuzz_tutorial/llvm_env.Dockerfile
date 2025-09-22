@@ -32,4 +32,4 @@ RUN mkdir /home/fuzz/code/llvm-11.0.1/build
 WORKDIR /home/fuzz/code/llvm-11.0.1/build
 # breaks here
 RUN cmake -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_LINKER=lld -DLLVM_USE_LINKER=lld  .. 
-#RUN ninja
+RUN ninja

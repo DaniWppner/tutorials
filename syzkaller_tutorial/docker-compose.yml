@@ -6,7 +6,7 @@ services:
     tty: true
     privileged: true
     working_dir: /syzkaller/gopath/src/github.com/google/syzkaller
-    entrypoint: /usr/bin/bash
+    entrypoint: bash
     environment:
       - HOME=/syzkaller
       - GOPATH=/syzkaller/gopath:/gopath

@@ -1,0 +1,26 @@
+services:
+  build-linux-v6.17.x-environ:
+    build:
+      context: .
+      dockerfile: ./Dockerfile_v6.17.0-rc6
+    container_name: build-linux-v6.17.0-rc6-environ
+    stdin_open: true
+    tty: true
+    working_dir: /src
+    entrypoint: bash
+    volumes:
+      - /local/path/to/linux:/src/linux:z
+    restart: "no"
+
+  build-linux-v5.9.x-environ:
+    build:
+      context: .
+      dockerfile: ./Dockerfile_v5.9.11
+    container_name: build-linux-v5.9.x-environ
+    stdin_open: true
+    tty: true
+    working_dir: /src
+    entrypoint: bash
+    volumes:
+      - /local/path/to/linux:/src/linux:z
+    restart: "no"
