@@ -37,14 +37,50 @@ class ConfigurationError(Exception):
     pass
 
 
+def load_config(config_path: Path, required_keys: list[str]) -> dict:
+    """
+    Load configuration from config.json file in the current working directory.
+    """
+    try:
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+            missing_keys = [key for key in required_keys if key not in config]
+            if missing_keys:
+                raise ConfigurationError(f"Missing required keys in config file: {missing_keys}")
+            return config
+    except FileNotFoundError:
+        raise ConfigurationError(f"Configuration file not found at {config_path}")
+    except json.JSONDecodeError:
+        raise ConfigurationError(f"Invalid JSON in configuration file {config_path}")
+
+def confirm_paths(required_keys: dict[str,Path]) -> bool:
+    """
+    Ask user to confirm the paths that will be used.
+    """
+    def prompt_for_confirm() -> bool:
+        while True:
+            response = input("\nDo you want to continue? [y/N]: ").lower()
+            if response in ['y', 'yes']:
+                return True
+            if response in ['', 'n', 'no']:
+                return False
+            print("Please answer 'y' or 'n'")
+
+    res = True
+    for key, val in required_keys.items():
+        print(f"The following {key} source path will be used:\n {str(val)}")
+        res = res and prompt_for_confirm()
+    return res
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Automate execution of syz-manager with a reproducible working tree."
     )
-    parser.add_argument("--linux-src", required=True, help="Path to the Linux source tree")
+    parser.add_argument("--linux-src", help="Path to the Linux source tree (overrides config file)")
     parser.add_argument("--cfg-template", required=True, help="Path to the syzkaller .cfg template")
-    parser.add_argument("--syzkaller-src", required=True, help="Path to the syzkaller source tree")
+    parser.add_argument("--syzkaller-src", help="Path to the syzkaller source tree (overrides config file)")
     parser.add_argument("--work-name", required=True, help="Name to use for the working tree")
+    parser.add_argument("--config", default="config.json", help="Path to the configuration file (default: config.json)")
     return parser.parse_args()
 
 
@@ -199,11 +235,28 @@ def run_syz_manager(syzkaller_src: Path, cfg_path: Path, log_file: Path):
 def main():
     args = parse_args()
 
-    # Resolve working directory
+    linux_src = args.linux_src
+    syzkaller_src = args.syzkaller_src
+
+    required_keys = []
+    if linux_src is None:
+        required_keys.append('linux_src')
+    if syzkaller_src is None:
+        required_keys.append('syzkaller_src')
+
+    if required_keys:
+        config = load_config(Path(args.config), required_keys=required_keys)
+        if not linux_src:
+            linux_src = config['linux_src']
+        if not syzkaller_src:
+            syzkaller_src = config['syzkaller_src']
+
+        if not confirm_paths(config):
+            print("Operation cancelled by user")
+            sys.exit(0)
+
     work_dir = Path(args.work_name).resolve()
     repro_dir = work_dir / REPRO_PACKAGE_DIRNAME
-
-    # Paths of reproduction package files
     real_cfg = repro_dir / REAL_CFG_FILENAME
     linux_config_file = repro_dir / LINUX_CONFIG_FILENAME
     linux_commit_file = repro_dir / LINUX_COMMIT_FILENAME
@@ -213,12 +266,12 @@ def main():
     expected_real_cfg = copy_and_modify_cfg(
         Path(args.cfg_template),
         work_dir,
-        Path(args.syzkaller_src),
-        Path(args.linux_src)
+        Path(syzkaller_src),
+        Path(linux_src)
     )
-    expected_linux_config = get_linux_config(Path(args.linux_src))
-    expected_linux_commit = get_last_commit(Path(args.linux_src))
-    expected_syzkaller_commit = get_last_commit(Path(args.syzkaller_src))
+    expected_linux_config = get_linux_config(Path(linux_src))
+    expected_linux_commit = get_last_commit(Path(linux_src))
+    expected_syzkaller_commit = get_last_commit(Path(syzkaller_src))
 
     expected_files : dict[Path,str] = {
         real_cfg: expected_real_cfg,

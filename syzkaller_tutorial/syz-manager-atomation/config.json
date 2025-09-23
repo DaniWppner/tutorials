@@ -1,0 +1,4 @@
+{
+    "linux_src": "/path/to/linux",
+    "syzkaller_src": "/path/to/syzkaller"
+}
