@@ -118,7 +118,7 @@ def get_linux_config(linux_src: Path) -> str:
     return cfg_path.read_text()
 
 
-def get_last_commit(repo_source_root: Path) -> dict[str, str]:
+def get_last_commit(repo_source_root: Path) -> dict[str, str|None]:
     """
     Return last commit info from the github repo.
     """
@@ -134,11 +134,14 @@ def get_last_commit(repo_source_root: Path) -> dict[str, str]:
         ["git", "-C", str(repo_source_root), "rev-parse", "--abbrev-ref", "HEAD"], text=True
     ).strip()
 
-    remote_name = subprocess.check_output(
-        ["git", "-C", str(repo_source_root), "config", f"branch.{branch}.remote"], text=True
-    ).strip()
+    try:
+        remote_name = subprocess.check_output(
+            ["git", "-C", str(repo_source_root), "config", f"branch.{branch}.remote"], text=True
+        ).strip()
+    except subprocess.CalledProcessError:
+        remote_name = None
 
-    remote_url = subprocess.check_output(
+    remote_url = None if remote_name is None else subprocess.check_output(
         ["git", "-C", str(repo_source_root), "remote", "get-url", remote_name], text=True
     ).strip()
 
@@ -288,7 +291,7 @@ def main():
         write_repro_package(repro_dir, expected_files)
 
     log_file = work_dir / SYZ_MANAGER_LOG_FILENAME
-    run_syz_manager(Path(args.syzkaller_src), real_cfg, log_file)
+    run_syz_manager(syzkaller_src, real_cfg, log_file)
 
 
 if __name__ == "__main__":
