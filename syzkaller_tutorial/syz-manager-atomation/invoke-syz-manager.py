@@ -37,7 +37,7 @@ class ConfigurationError(Exception):
     pass
 
 
-def load_config(config_path: Path, required_keys: list[str]) -> dict:
+def load_config(config_path: Path, required_keys: list[str]) -> dict[str, str]:
     """
     Load configuration from config.json file in the current working directory.
     """
@@ -291,7 +291,7 @@ def main():
         write_repro_package(repro_dir, expected_files)
 
     log_file = work_dir / SYZ_MANAGER_LOG_FILENAME
-    run_syz_manager(syzkaller_src, real_cfg, log_file)
+    run_syz_manager(Path(syzkaller_src), real_cfg, log_file)
 
 
 if __name__ == "__main__":
