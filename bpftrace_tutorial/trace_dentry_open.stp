@@ -1,0 +1,13 @@
+probe kernel.function("do_dentry_open") {
+    printf("\n[+] Entering do_dentry_open() \n")
+    printf("  f->f_flags = %x \n", $f->f_flags)
+    printf("  f->f_path->dentry->d_inode->i_mode = %o \n", $f->f_path->dentry->d_inode->i_mode)
+    printf("  f->f_path->dentry->d_inode->i_ino = %d \n", $f->f_path->dentry->d_inode->i_ino)
+    printf("  f->f_path->dentry->d_name.name = %s \n", kernel_string($f->f_path->dentry->d_name->name))
+    printf("  f->f_cred->uid = %d \n", $f->f_cred->uid->val)
+    printf("  f->f_cred->gid = %d \n", $f->f_cred->gid->val)
+}
+
+probe kernel.function("do_dentry_open").return {
+    printf("[-] Leaving do_dentry_open(): return = %d\n", $return)
+}
