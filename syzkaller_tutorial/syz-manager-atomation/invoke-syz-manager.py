@@ -114,7 +114,12 @@ def copy_and_modify_cfg(
     Return expected contents for real.cfg after copying/modifying.
     """
     with open(cfg_template, "r") as f:
-        config = json.load(f)
+        try:
+            config = json.load(f)
+        except json.JSONDecodeError:
+            raise ConfigurationError(
+                f"Invalid JSON in syzkaller cfg template file {cfg_template}"
+            )
 
     config["workdir"] = str(work_dir)
     config["syzkaller"] = str(syzkaller_path)
@@ -460,13 +465,13 @@ if __name__ == "__main__":
         sys.exit(main())
     except ReproductionError as e:
         print(
-            f"[ReproductionError] workdir already exists but there's a mismatch in the expected reproduction package: \n{e}",
+            f"[ReproductionError]: {e}",
             file=sys.stderr,
         )
         sys.exit(1)
     except ConfigurationError as e:
         print(
-            f"[ConfigurationError] some files expected to be able to run syzkaller are missing or incorrect: \n{e}",
+            f"[ConfigurationError]: {e}",
             file=sys.stderr,
         )
         sys.exit(1)
