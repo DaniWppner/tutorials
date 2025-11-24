@@ -104,6 +104,9 @@ def parse_args():
         default="config.json",
         help="Path to the configuration file (default: config.json)",
     )
+    parser.add_argument(
+        "-v", "--verbosity", type=int, default=10, help="syzkaller verbosity level (default max)"
+    )    
     return parser.parse_args()
 
 
@@ -369,8 +372,8 @@ def write_repro_files(repro_dir: Path, expected_files: dict[Path, str]):
     )
 
 
-def run_syz_manager(syzkaller_src: Path, cfg_path: Path, log_file: Path):
-    """Run syz-manager with -vv 10 and the given config, redirecting output with tee."""
+def run_syz_manager(syzkaller_src: Path, cfg_path: Path, log_file: Path, verbosity: int):
+    """Run syz-manager with the given config and verbosity level, redirecting output with tee."""
     syz_manager_bin = syzkaller_src
     for part in SYZ_MANAGER_BIN_RELATIVE_PATH:
         syz_manager_bin = syz_manager_bin / part
@@ -389,7 +392,7 @@ def run_syz_manager(syzkaller_src: Path, cfg_path: Path, log_file: Path):
         candidate = parent / f"{base}_{counter}{ext}"
         counter += 1
 
-    cmd = f"{syz_manager_bin} -vv 10 -config {cfg_path} 2>&1 | tee {candidate}"
+    cmd = f"{syz_manager_bin} -vv {verbosity} -config {cfg_path} 2>&1 | tee {candidate}"
     print(f"running {cmd}")
 
     # Hand over execution: replace current process with syz-manager+tee
@@ -457,7 +460,7 @@ def main():
         write_repro_files(repro_dir, expected_files)
 
     log_file = work_dir / SYZ_MANAGER_LOG_FILENAME
-    run_syz_manager(Path(syzkaller_src), real_cfg, log_file)
+    run_syz_manager(Path(syzkaller_src), real_cfg, log_file, args.verbosity)
 
 
 if __name__ == "__main__":
