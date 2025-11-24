@@ -38,6 +38,9 @@ CONFIG_SECURITYFS=y
 CONFIG_KASAN=y
 CONFIG_KASAN_INLINE=y
 
+# Enable UBSAN (Kernel Undefined Behaviour Sanitizer)
+CONFIG_UBSAN=y
+
 # Enable fault injection to be used during testing by syzkaller
 # This needs the following commits in older kernels
 #    fault-inject: support systematic fault injection
@@ -76,5 +79,5 @@ CONFIG_WQ_WATCHDOG=y
 CONFIG_DEFAULT_HUNG_TASK_TIMEOUT=140
 CONFIG_RCU_CPU_STALL_TIMEOUT=100
 
-# Enable CONFIGFS_FS is disabled in old kernel versions defconfig for some reason
-CONFIG_CONFIGFS_FS=y
+# These vital syzkaller configurations are disabled in old kernel versions defconfig for some reason
+CONFIG_TUN=y
