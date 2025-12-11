@@ -2,6 +2,7 @@
 import argparse
 import os
 import sys
+import re
 import subprocess
 import json
 from pathlib import Path
@@ -10,6 +11,7 @@ import difflib
 
 # Constants for hardcoded paths and filenames
 REPRO_PACKAGE_DIRNAME = "repro_package"
+CORPUS_FILENAME = "corpus.db"
 REAL_CFG_FILENAME = "syzkaller.cfg"
 LINUX_CONFIG_FILENAME = ".config"
 LINUX_COMMIT_FILENAME = "linux_commit_difference.json"
@@ -20,6 +22,8 @@ SYZ_MANAGER_LOG_FILENAME = "syz-manager.log"
 SYZ_MANAGER_BIN_RELATIVE_PATH = ["bin", "syz-manager"]
 BZIMAGE_RELATIVE_PATH = ["arch", "x86", "boot", "bzImage"]
 
+
+INVOKE_SYZ_MANAGER_VERSION = "1.0.0"
 
 def color_diff_line(line: str) -> str:
     if line.startswith("+") and not line.startswith("+++"):
@@ -61,19 +65,19 @@ def load_config(config_path: Path, required_keys: list[str]) -> dict[str, str]:
         raise ConfigurationError(f"Invalid JSON in configuration file {config_path}")
 
 
+def prompt_for_confirm() -> bool:
+    while True:
+        response = input("\nDo you want to continue? [y/N]: ").lower()
+        if response in ["y", "yes"]:
+            return True
+        if response in ["", "n", "no"]:
+            return False
+        print("Please answer 'y' or 'n'")
+
 def confirm_paths(required_keys: dict[str, Path]) -> bool:
     """
     Ask user to confirm the paths that will be used.
     """
-
-    def prompt_for_confirm() -> bool:
-        while True:
-            response = input("\nDo you want to continue? [y/N]: ").lower()
-            if response in ["y", "yes"]:
-                return True
-            if response in ["", "n", "no"]:
-                return False
-            print("Please answer 'y' or 'n'")
 
     res = True
     for key, val in required_keys.items():
@@ -300,16 +304,37 @@ def create_patch_from_info(
         print(f"[write] create git patch at {output_path}")
 
 
-def check_working_tree(work_dir: Path, expected_files: dict[Path, str]):
-    """
-    Check if the working tree exists and validate reproduction package contents.
-    """
+def get_existing_work_dir(work_dir: Path) -> tuple[Path, Path, list[Path]]:
     repro_dir = work_dir / REPRO_PACKAGE_DIRNAME
+    corpus_db = work_dir / CORPUS_FILENAME
+    previous_runs = []
+
     if not repro_dir.exists():
-        raise ReproductionError(
-            f"Directory with name {work_dir} already exists but reproduction package is missing. "
-            f"You should probably choose a different workdir name."
-        )
+        repro_dir = None
+        print(f"[warning]: Directory with name {work_dir} already exists but reproduction package is missing.")
+        print(f"[warning]: This will create the syzkaller files along the existing contents of {work_dir}.")
+            
+    if not corpus_db.exists():
+        corpus_db = None
+    
+    previous_run_pattern = re.compile("run_(d*)")
+    for dir in work_dir.iterdir():
+        if dir.is_dir() and previous_run_pattern.match(dir.name):
+            previous_runs.append(dir)
+
+    previous_runs.sort(key=lambda rundir: rundir.name.split('_')[1])
+    if len(previous_runs) == 0:
+        previous_runs = None
+    
+    if corpus_db is not None and previous_runs is not None:
+        raise ConfigurationError(f"Existing {work_dir} has both an existing corpus.db and previos runs. Handling both at the same time is not supported.")
+
+
+
+def check_repro_package(repro_dir: Path, expected_files: dict[Path, str]):
+    """
+    Validate reproduction package contents.
+    """
 
     MAX_CONFIG_DIFF_LINES = 10
     errors = []
@@ -353,10 +378,37 @@ def check_working_tree(work_dir: Path, expected_files: dict[Path, str]):
     if errors:
         raise ReproductionError("\n".join(errors))
 
-    if errors:
-        raise ReproductionError("\n".join(errors))
+    print(f"[ok] Reproduction package {repro_dir} is valid.")
 
-    print(f"[ok] Working tree {work_dir} contains valid existing reproduction package.")
+def handle_existing_corpus(work_dir: Path, corpus: Path) -> Path:
+    
+    print(f"The directory {work_dir} already has a corpus.db file. Would you like to continue fuzzing from this run?")
+    reuse = prompt_for_confirm()
+    old_dir = work_dir / 'run_0'
+    old_dir.mkdir()
+    new_corpus = corpus.move_into(old_dir)
+    print(f"[ok] moved {corpus} to {new_corpus}")
+
+    if reuse:
+        return old_dir
+    else:
+        new_dir = work_dir / 'run_1'
+        return new_dir
+
+def handle_previous_runs(work_dir: Path, previous_runs: list[Path]) -> Path:
+    
+    print(f"The last run in {work_dir} is {previous_runs[-1].name}. Would you like to continue fuzzing from this run?")
+    reuse = prompt_for_confirm()
+
+    if reuse:
+        return previous_runs[-1]
+    else:
+        old_run_n = previous_runs[-1].split('_')[1]
+        new_run_n = int(old_run_n) + 1
+        new_dir = previous_runs[-1].parent / f'run_{new_run_n}'
+        new_dir.mkdir()
+        return new_dir
+       
 
 
 def write_repro_files(repro_dir: Path, expected_files: dict[Path, str]):
@@ -443,24 +495,41 @@ def main():
         linux_commit_file: json.dumps(expected_linux_commit, indent=4),
         syzkaller_commit_file: json.dumps(expected_syzkaller_commit, indent=4),
     }
+    
+    # TO DO: real_cfg should change if the work_dir changes
+    # This messes up the order of checking the repro package, and the location of the .cfg file
 
     if work_dir.exists():
-        check_working_tree(work_dir, expected_files)
+        repro_dir, existing_corpus, previous_runs = get_existing_work_dir(work_dir)
+        
+        if repro_dir is not None:
+            check_repro_package(repro_dir, expected_files)
+        else:
+            create_repro_dir(linux_src, syzkaller_src, repro_dir, expected_linux_commit, expected_syzkaller_commit, expected_files)
+            
+        if existing_corpus is not None:
+            work_dir = handle_existing_corpus(work_dir, existing_corpus)
+        elif previous_runs is not None:
+            work_dir = handle_previous_runs(work_dir, previous_runs)
+
     else:
         work_dir.mkdir(parents=False)
-        repro_dir.mkdir(parents=False)
-        create_patch_from_info(
+        create_repro_dir(linux_src, syzkaller_src, repro_dir, expected_linux_commit, expected_syzkaller_commit, expected_files)
+    
+    log_file = work_dir / SYZ_MANAGER_LOG_FILENAME
+    run_syz_manager(Path(syzkaller_src), real_cfg, log_file, args.verbosity)
+
+def create_repro_dir(linux_src, syzkaller_src, repro_dir, expected_linux_commit, expected_syzkaller_commit, expected_files):
+    repro_dir.mkdir(parents=False)
+    create_patch_from_info(
             expected_linux_commit, repro_dir / LINUX_DIFF_FILENAME, Path(linux_src)
         )
-        create_patch_from_info(
+    create_patch_from_info(
             expected_syzkaller_commit,
             repro_dir / SYZKALLER_DIFF_FILENAME,
             Path(syzkaller_src),
         )
-        write_repro_files(repro_dir, expected_files)
-
-    log_file = work_dir / SYZ_MANAGER_LOG_FILENAME
-    run_syz_manager(Path(syzkaller_src), real_cfg, log_file, args.verbosity)
+    write_repro_files(repro_dir, expected_files)
 
 
 if __name__ == "__main__":
