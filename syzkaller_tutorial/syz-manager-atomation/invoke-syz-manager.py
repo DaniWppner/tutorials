@@ -23,6 +23,7 @@ BZIMAGE_RELATIVE_PATH = ["arch", "x86", "boot", "bzImage"]
 
 INVOKE_SYZ_MANAGER_VERSION = "1.0.0"
 
+
 def color_diff_line(line: str) -> str:
     if line.startswith("+") and not line.startswith("+++"):
         return f"\033[32m{line}\033[0m"  # Green
@@ -63,7 +64,6 @@ def load_config(config_path: Path, required_keys: list[str]) -> dict[str, str]:
         raise ConfigurationError(f"Invalid JSON in configuration file {config_path}")
 
 
-
 def prompt_for_confirm() -> bool:
     while True:
         response = input("\nDo you want to continue? [y/N]: ").lower()
@@ -73,11 +73,11 @@ def prompt_for_confirm() -> bool:
             return False
         print("Please answer 'y' or 'n'")
 
+
 def confirm_paths(required_keys: dict[str, Path]) -> bool:
     """
     Ask user to confirm the paths that will be used.
     """
-
 
     res = True
     for key, val in required_keys.items():
@@ -109,8 +109,12 @@ def parse_args():
         help="Path to the configuration file (default: config.json)",
     )
     parser.add_argument(
-        "-v", "--verbosity", type=int, default=10, help="syzkaller verbosity level (default max)"
-    )    
+        "-v",
+        "--verbosity",
+        type=int,
+        default=10,
+        help="syzkaller verbosity level (default max)",
+    )
     return parser.parse_args()
 
 
@@ -310,14 +314,17 @@ def get_existing_work_dir(work_dir: Path) -> tuple[Path, Path]:
 
     if not repro_dir.exists():
         repro_dir = None
-        print(f"[warning]: Directory with name {work_dir} already exists but reproduction package is missing.")
-        print(f"[warning]: This will create the syzkaller files along the existing contents of {work_dir}.")
+        print(
+            f"[warning]: Directory with name {work_dir} already exists but reproduction package is missing."
+        )
+        print(
+            f"[warning]: This will create the syzkaller files along the existing contents of {work_dir}."
+        )
 
     if not corpus_db.exists():
         corpus_db = None
 
     return repro_dir, corpus_db
-
 
 
 def check_repro_package(repro_dir: Path, expected_files: dict[Path, str]):
@@ -371,19 +378,29 @@ def check_repro_package(repro_dir: Path, expected_files: dict[Path, str]):
 
     print(f"[ok] Reproduction package {repro_dir} is valid.")
 
+
 def handle_existing_corpus(work_dir: Path, corpus: Path):
 
-    print(f"The directory {work_dir} already has a corpus.db file. Would you like to continue fuzzing from this run?")
+    print(
+        f"The directory {work_dir} already has a corpus.db file. Would you like to continue fuzzing from this run?"
+    )
     reuse = prompt_for_confirm()
 
     if reuse:
         return
     else:
-        old_dir = work_dir / 'previous_run'
+        previous_run_dirs = [
+            subddir
+            for subddir in work_dir.iterdir()
+            if subddir.is_dir() and subddir.name.startswith("previous_run")
+        ]
+        old_dir = work_dir / f"previous_run_{len(previous_run_dirs)}"
         old_dir.mkdir()
-        new_corpus = corpus.move_into(old_dir)
+        new_corpus = old_dir / CORPUS_FILENAME
+        corpus.rename(new_corpus)
         print(f"[ok] moved {corpus} to {new_corpus}")
         return
+
 
 def write_repro_files(repro_dir: Path, expected_files: dict[Path, str]):
     """
@@ -398,7 +415,9 @@ def write_repro_files(repro_dir: Path, expected_files: dict[Path, str]):
     )
 
 
-def run_syz_manager(syzkaller_src: Path, cfg_path: Path, log_file: Path, verbosity: int):
+def run_syz_manager(
+    syzkaller_src: Path, cfg_path: Path, log_file: Path, verbosity: int
+):
     """Run syz-manager with the given config and verbosity level, redirecting output with tee."""
     syz_manager_bin = syzkaller_src
     for part in SYZ_MANAGER_BIN_RELATIVE_PATH:
@@ -476,28 +495,50 @@ def main():
         if existing_repro is not None:
             check_repro_package(existing_repro, expected_files)
         else:
-            create_repro_dir(linux_src, syzkaller_src, repro_dir, expected_linux_commit, expected_syzkaller_commit, expected_files)
+            create_repro_dir(
+                linux_src,
+                syzkaller_src,
+                repro_dir,
+                expected_linux_commit,
+                expected_syzkaller_commit,
+                expected_files,
+            )
 
         if existing_corpus is not None:
             handle_existing_corpus(work_dir, existing_corpus)
 
     else:
         work_dir.mkdir(parents=False)
-        create_repro_dir(linux_src, syzkaller_src, repro_dir, expected_linux_commit, expected_syzkaller_commit, expected_files)
+        create_repro_dir(
+            linux_src,
+            syzkaller_src,
+            repro_dir,
+            expected_linux_commit,
+            expected_syzkaller_commit,
+            expected_files,
+        )
 
     log_file = work_dir / SYZ_MANAGER_LOG_FILENAME
     run_syz_manager(Path(syzkaller_src), real_cfg, log_file, args.verbosity)
 
-def create_repro_dir(linux_src, syzkaller_src, repro_dir, expected_linux_commit, expected_syzkaller_commit, expected_files):
+
+def create_repro_dir(
+    linux_src,
+    syzkaller_src,
+    repro_dir,
+    expected_linux_commit,
+    expected_syzkaller_commit,
+    expected_files,
+):
     repro_dir.mkdir(parents=False)
     create_patch_from_info(
-            expected_linux_commit, repro_dir / LINUX_DIFF_FILENAME, Path(linux_src)
-        )
+        expected_linux_commit, repro_dir / LINUX_DIFF_FILENAME, Path(linux_src)
+    )
     create_patch_from_info(
-            expected_syzkaller_commit,
-            repro_dir / SYZKALLER_DIFF_FILENAME,
-            Path(syzkaller_src),
-        )
+        expected_syzkaller_commit,
+        repro_dir / SYZKALLER_DIFF_FILENAME,
+        Path(syzkaller_src),
+    )
     write_repro_files(repro_dir, expected_files)
 
 
