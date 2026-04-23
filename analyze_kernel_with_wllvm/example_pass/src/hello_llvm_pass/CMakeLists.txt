@@ -1,0 +1,1 @@
+add_llvm_pass_plugin(hello_llvm hello_llvm_pass.cpp)

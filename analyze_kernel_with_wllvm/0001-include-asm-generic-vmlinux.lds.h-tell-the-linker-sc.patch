@@ -1,0 +1,27 @@
+From 16dc5c7b1819f19df8f524e58c6bea5ea33638e2 Mon Sep 17 00:00:00 2001
+From: Daniel Wappner <dwappner@dc.uba.ar>
+Date: Mon, 5 Jan 2026 18:20:03 +0800
+Subject: [PATCH] include/asm-generic/vmlinux.lds.h: tell the linker script
+ where to expect .llvm_bc section
+
+---
+ include/asm-generic/vmlinux.lds.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 5703526d6ebf..8b045a3ef658 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -834,7 +834,8 @@
+ 		.comment 0 : { *(.comment) }				\
+ 		.symtab 0 : { *(.symtab) }				\
+ 		.strtab 0 : { *(.strtab) }				\
+-		.shstrtab 0 : { *(.shstrtab) }
++		.shstrtab 0 : { *(.shstrtab) }				\
++		.llvm_bc 0 : { *(.llvm_bc) }
+ 
+ #ifdef CONFIG_GENERIC_BUG
+ #define BUG_TABLE							\
+-- 
+2.43.0
+
