@@ -1,0 +1,14 @@
+# This compose file is meant to mount the linux directory in the docker container 
+# to compile with wllvm and run analysis.
+
+services:
+  linux_wllvm_environ:
+    build:
+      context: .
+      dockerfile: ./compile_linux_v6.10.Dockerfile
+    volumes:
+      - /path/to/local/linux:/home/src/linux
+      - ./:/wllvm_analysis
+    command: /bin/bash
+    tty: true
+    stdin_open: true

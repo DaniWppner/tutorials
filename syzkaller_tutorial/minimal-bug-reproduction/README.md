@@ -3,6 +3,11 @@
 ### 1. Clone syzkaller and linux repos
 Make sure to checkout the **v6.15-rc5** tag inside the linux repo.
 
+If you don't have the linux source tree locally available, you can get it with
+```bash
+git clone --branch v.6.15-rc5 --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+``` 
+
 ### 2. Add crash to ptrace syscall in linux/kernel/ptrace.c
 ```diff
 diff --git a/kernel/ptrace.c b/kernel/ptrace.c

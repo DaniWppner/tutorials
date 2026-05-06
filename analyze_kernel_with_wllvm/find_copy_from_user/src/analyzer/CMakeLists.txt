@@ -1,0 +1,1 @@
+add_llvm_pass_plugin(copy_from_user_analyzer analyzer.cpp)
