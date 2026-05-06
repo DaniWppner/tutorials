@@ -24,3 +24,16 @@ services:
     volumes:
       - /local/path/to/linux:/src/linux:z
     restart: "no"
+
+  build-linux-v4.11.x-environ:
+    build:
+      context: .
+      dockerfile: ./Dockerfile_v4.11.0
+    container_name: build-linux-v4.11.x-environ
+    stdin_open: true
+    tty: true
+    working_dir: /src
+    entrypoint: bash
+    volumes:
+      - /local/path/to/linux:/src/linux:z
+    restart: "no"
