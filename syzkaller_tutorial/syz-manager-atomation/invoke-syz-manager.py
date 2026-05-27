@@ -21,7 +21,7 @@ SYZ_MANAGER_LOG_FILENAME = "syz-manager.log"
 SYZ_MANAGER_BIN_RELATIVE_PATH = ["bin", "syz-manager"]
 BZIMAGE_RELATIVE_PATH = ["arch", "x86", "boot", "bzImage"]
 
-INVOKE_SYZ_MANAGER_VERSION = "1.0.0"
+INVOKE_SYZ_MANAGER_VERSION = "1.1.0"
 
 
 def color_diff_line(line: str) -> str:
@@ -154,41 +154,137 @@ def get_linux_config(linux_src: Path) -> str:
     return cfg_path.read_text()
 
 
+def get_closest_upstream_ancestor(
+    repo_source_root: Path,
+) -> tuple[str, str, str] | None:
+    """
+    Find the most recent common ancestor with any branch that has an upstream.
+    Returns (ancestor_hash, ancestor_message, remote_url) or None if not found.
+    """
+    output = subprocess.check_output(
+        [
+            "git",
+            "-C",
+            str(repo_source_root),
+            "for-each-ref",
+            "--format=%(refname:short) %(upstream:short)",
+            "refs/heads/",
+        ],
+        text=True,
+    ).strip()
+
+    candidates = []
+    for line in output.splitlines():
+        parts = line.split()
+        if len(parts) >= 2:
+            candidates.append((parts[0], parts[1]))
+
+    if not candidates:
+        return None
+
+    best_ancestor = None
+    min_distance = float("inf")
+    best_cand_branch = None
+
+    for cand_branch, cand_upstream in candidates:
+        try:
+            ancestor = subprocess.check_output(
+                [
+                    "git",
+                    "-C",
+                    str(repo_source_root),
+                    "merge-base",
+                    "HEAD",
+                    cand_upstream,
+                ],
+                text=True,
+                stderr=subprocess.DEVNULL,
+            ).strip()
+
+            distance = int(
+                subprocess.check_output(
+                    [
+                        "git",
+                        "-C",
+                        str(repo_source_root),
+                        "rev-list",
+                        "--count",
+                        f"{ancestor}..HEAD",
+                    ],
+                    text=True,
+                    stderr=subprocess.DEVNULL,
+                ).strip()
+            )
+
+            if distance < min_distance:
+                min_distance = distance
+                best_ancestor = ancestor
+                best_cand_branch = cand_branch
+        except subprocess.CalledProcessError:
+            continue
+
+    if best_ancestor is None or best_cand_branch is None:
+        return None
+
+    ancestor_msg = subprocess.check_output(
+        ["git", "-C", str(repo_source_root), "log", "-1", best_ancestor, "--pretty=%s"],
+        text=True,
+    ).strip()
+
+    remote_name = get_remote(repo_source_root, best_cand_branch)
+    if remote_name is None:
+        return None
+
+    remote_url = subprocess.check_output(
+        ["git", "-C", str(repo_source_root), "remote", "get-url", remote_name],
+        text=True,
+    ).strip()
+
+    return best_ancestor, ancestor_msg, remote_url, best_cand_branch
+
+
 def get_syzkaller_history_info(repo_source_root: Path) -> dict[str, str | None]:
     """
     Return commit info up to the local HEAD from the syzkaller repo.
-    For syzkaller we assume we are on a branch that is tracked remotely.
+    For syzkaller we assume we are on a branch that is tracked remotely,
+    or we find the closest ancestor that is.
     """
     branch = subprocess.check_output(
         ["git", "-C", str(repo_source_root), "rev-parse", "--abbrev-ref", "HEAD"],
         text=True,
     ).strip()
 
-    remote_branch = get_remote(repo_source_root, branch)
-    if remote_branch is None:
-        raise ConfigurationError(
-            f"Current branch {branch} in syzkaller repo at {repo_source_root} has no upstream."
-        )
+    remote_name = get_remote(repo_source_root, branch)
 
-    remote_url = subprocess.check_output(
-        ["git", "-C", str(repo_source_root), "remote", "get-url", remote_branch],
-        text=True,
-    ).strip()
+    if remote_name is not None:
+        ancestor_branch = branch
+        remote_url = subprocess.check_output(
+            ["git", "-C", str(repo_source_root), "remote", "get-url", remote_name],
+            text=True,
+        ).strip()
 
-    remote_head = subprocess.check_output(
-        ["git", "-C", str(repo_source_root), "rev-parse", "@{u}"], text=True
-    ).strip()
-    remote_head_msg = subprocess.check_output(
-        ["git", "-C", str(repo_source_root), "log", "-1", "@{u}", "--pretty=%s"],
-        text=True,
-    ).strip()
+        ancestor_hash = subprocess.check_output(
+            ["git", "-C", str(repo_source_root), "rev-parse", "@{u}"], text=True
+        ).strip()
+        ancestor_msg = subprocess.check_output(
+            ["git", "-C", str(repo_source_root), "log", "-1", "@{u}", "--pretty=%s"],
+            text=True,
+        ).strip()
+    else:
+        closest_ancestor_info = get_closest_upstream_ancestor(repo_source_root)
+        if closest_ancestor_info is None:
+            raise ConfigurationError(
+                f"Current branch {branch} in syzkaller repo at {repo_source_root} has no upstream, "
+                "and no common ancestor with any upstream branch was found."
+            )
+        ancestor_hash, ancestor_msg, remote_url, ancestor_branch = closest_ancestor_info
 
-    untracked_commits = commits_to_head(repo_source_root, remote_head)
+    untracked_commits = commits_to_head(repo_source_root, ancestor_hash)
 
     ancestor_info = {
-        "hash": remote_head,
-        "message": remote_head_msg,
-        "branch": branch,
+        "hash": ancestor_hash,
+        "message": ancestor_msg,
+        "branch": ancestor_branch,
         "upstream": remote_url,
     }
     difference = {"distance": len(untracked_commits), "commits": untracked_commits}
