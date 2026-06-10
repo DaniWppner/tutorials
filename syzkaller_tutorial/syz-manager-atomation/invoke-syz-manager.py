@@ -21,7 +21,7 @@ SYZ_MANAGER_LOG_FILENAME = "syz-manager.log"
 SYZ_MANAGER_BIN_RELATIVE_PATH = ["bin", "syz-manager"]
 BZIMAGE_RELATIVE_PATH = ["arch", "x86", "boot", "bzImage"]
 
-INVOKE_SYZ_MANAGER_VERSION = "1.1.0"
+INVOKE_SYZ_MANAGER_VERSION = "1.1.1"
 
 
 def color_diff_line(line: str) -> str:
@@ -354,26 +354,35 @@ def get_last_tag(repo_source_root: Path) -> dict[str, str]:
     """
     Return the closest tag, and the commit hash and message at that tag.
     """
-    tag = (
+    og_tag = (
         subprocess.check_output(
             ["git", "-C", str(repo_source_root), "describe"], text=True
         )
         .strip()
-        .split("-")[0]
     )
+    tag = og_tag.split("-")[0]
 
-    commit_hash_and_message = subprocess.check_output(
-        [
-            "git",
-            "-C",
-            str(repo_source_root),
-            "log",
-            "-1",
-            "--pretty=%H,%s",
-            f"tags/{tag}",
-        ],
-        text=True,
-    ).strip()
+    cmd = [
+                "git",
+                "-C",
+                str(repo_source_root),
+                "log",
+                "-1",
+                "--pretty=%H,%s",
+                f"tags/{tag}",
+            ]
+    try:
+        commit_hash_and_message = subprocess.check_output(cmd, text=True).strip()
+    except subprocess.CalledProcessError as e:
+        raise ConfigurationError(
+            "Getting the linux commit of the closest tag failed, probably "
+            f"because current tag is {og_tag} but {tag} does not exist yet.\n\n"
+            "command ran:\n"
+            f"  {' '.join(cmd)}\n\n"
+            "received output:\n"
+            f"  {e.output}"
+        )
+
     commit_hash, commit_msg = commit_hash_and_message.split(",", 1)
 
     return {
