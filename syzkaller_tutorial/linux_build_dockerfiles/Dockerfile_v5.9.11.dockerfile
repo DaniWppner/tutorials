@@ -10,8 +10,8 @@ RUN grep deb /etc/apt/sources.list | \
     sed 's/^deb/deb-src /g' >> /etc/apt/sources.list
 
 # Install compiler, python, subversion, c++ libraries and wget,curl,etc. utilities.
-RUN TZ=AR DEBIAN_FRONTEND=noninteractive http_proxy=http://proxy.fcen.uba.ar:8080 HTTP_PROXY=http://proxy.fcen.uba.ar:8080 apt-get update && \
-    TZ=AR DEBIAN_FRONTEND=noninteractive http_proxy=http://proxy.fcen.uba.ar:8080 HTTP_PROXY=http://proxy.fcen.uba.ar:8080 apt-get install -y --no-install-recommends \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
 	   ca-certificates gnupg \
            # These are needed to build LLVM
            build-essential cmake make zlib1g wget subversion unzip git \
