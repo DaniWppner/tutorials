@@ -6,7 +6,8 @@ import subprocess
 import json
 from pathlib import Path
 import difflib
-
+import time
+import signal
 
 # Constants for hardcoded paths and filenames
 REPRO_PACKAGE_DIRNAME = "repro_package"
@@ -21,7 +22,21 @@ SYZ_MANAGER_LOG_FILENAME = "syz-manager.log"
 SYZ_MANAGER_BIN_RELATIVE_PATH = ["bin", "syz-manager"]
 BZIMAGE_RELATIVE_PATH = ["arch", "x86", "boot", "bzImage"]
 
+# Update if it would make reproduction packages from the previous version incompatible
 INVOKE_SYZ_MANAGER_VERSION = "1.1.1"
+
+
+def log(*args, **kwargs):
+    """Print log messages in magenta (stdout) or red (stderr)."""
+    text = " ".join(str(a) for a in args)
+    file_arg = kwargs.get("file")
+
+    if file_arg is None or file_arg == sys.stdout:
+        print(f"\033[35m{text}\033[0m", **kwargs)
+    elif file_arg == sys.stderr:
+        print(f"\033[31m{text}\033[0m", **kwargs)
+    else:
+        print(*args, **kwargs)
 
 
 def color_diff_line(line: str) -> str:
@@ -71,7 +86,7 @@ def prompt_for_confirm() -> bool:
             return True
         if response in ["", "n", "no"]:
             return False
-        print("Please answer 'y' or 'n'")
+        log("Please answer 'y' or 'n'")
 
 
 def confirm_paths(required_keys: dict[str, Path]) -> bool:
@@ -79,11 +94,11 @@ def confirm_paths(required_keys: dict[str, Path]) -> bool:
     Ask user to confirm the paths that will be used.
     """
 
-    res = True
     for key, val in required_keys.items():
-        print(f"The following {key} source path will be used:\n {str(val)}")
-        res = res and prompt_for_confirm()
-    return res
+        log(f"The following {key} source path will be used:\n {str(val)}")
+        if not prompt_for_confirm():
+            return False
+    return True
 
 
 def parse_args():
@@ -115,6 +130,16 @@ def parse_args():
         default=10,
         help="syzkaller verbosity level (default max)",
     )
+    parser.add_argument(
+        "--run-hours",
+        type=float,
+        help="Length of each campaign in hours (enforces clean initial state and archives runs)",
+    )
+    parser.add_argument(
+        "--N-runs",
+        type=int,
+        help="Desired amount of campaigns to run (default: infinite)",
+    )
     return parser.parse_args()
 
 
@@ -136,9 +161,7 @@ def copy_and_modify_cfg(
     config["syzkaller"] = str(syzkaller_path)
     config["kernel_src"] = str(linux_src_path)
     config["kernel_obj"] = str(linux_src_path)
-    bzimage_path = Path(linux_src_path)
-    for part in BZIMAGE_RELATIVE_PATH:
-        bzimage_path = bzimage_path / part
+    bzimage_path = Path(linux_src_path).joinpath(*BZIMAGE_RELATIVE_PATH)
     config["vm"]["kernel"] = str(bzimage_path)
 
     return json.dumps(config, indent=4)
@@ -354,23 +377,20 @@ def get_last_tag(repo_source_root: Path) -> dict[str, str]:
     """
     Return the closest tag, and the commit hash and message at that tag.
     """
-    og_tag = (
-        subprocess.check_output(
-            ["git", "-C", str(repo_source_root), "describe"], text=True
-        )
-        .strip()
-    )
+    og_tag = subprocess.check_output(
+        ["git", "-C", str(repo_source_root), "describe"], text=True
+    ).strip()
     tag = og_tag.split("-")[0]
 
     cmd = [
-                "git",
-                "-C",
-                str(repo_source_root),
-                "log",
-                "-1",
-                "--pretty=%H,%s",
-                f"tags/{tag}",
-            ]
+        "git",
+        "-C",
+        str(repo_source_root),
+        "log",
+        "-1",
+        "--pretty=%H,%s",
+        f"tags/{tag}",
+    ]
     try:
         commit_hash_and_message = subprocess.check_output(cmd, text=True).strip()
     except subprocess.CalledProcessError as e:
@@ -399,7 +419,7 @@ def create_patch_from_info(
     Create a patch file from the ancestor to HEAD using git diff
     """
     if history_info["difference"]["distance"] == 0:
-        print(
+        log(
             f"[info] No unpushed commits in repo at {repo_source_root}, skipping patch creation."
         )
         return
@@ -409,20 +429,21 @@ def create_patch_from_info(
             subprocess.run(
                 ["git", "-C", str(repo_source_root), "diff", f"{ancestor_hash}..HEAD"],
                 stdout=f,
+                check=True,
             )
-        print(f"[write] create git patch at {output_path}")
+        log(f"[write] create git patch at {output_path}")
 
 
-def get_existing_work_dir(work_dir: Path) -> tuple[Path, Path]:
+def get_existing_work_dir(work_dir: Path) -> tuple[Path | None, Path | None]:
     repro_dir = work_dir / REPRO_PACKAGE_DIRNAME
     corpus_db = work_dir / CORPUS_FILENAME
 
     if not repro_dir.exists():
         repro_dir = None
-        print(
+        log(
             f"[warning]: Directory with name {work_dir} already exists but reproduction package is missing."
         )
-        print(
+        log(
             f"[warning]: This will create the syzkaller files along the existing contents of {work_dir}."
         )
 
@@ -478,15 +499,72 @@ def check_repro_package(repro_dir: Path, expected_files: dict[Path, str]):
     if errors:
         raise ReproductionError("\n".join(errors))
 
-    if errors:
-        raise ReproductionError("\n".join(errors))
-
-    print(f"[ok] Reproduction package {repro_dir} is valid.")
+    log(f"[ok] Reproduction package {repro_dir} is valid.")
 
 
-def handle_existing_corpus(work_dir: Path, corpus: Path):
+def get_next_archive_dir(work_dir: Path) -> Path:
+    """Find the next available previous_run_X directory safely."""
+    previous_run_dirs = [
+        d
+        for d in work_dir.iterdir()
+        if d.is_dir() and d.name.startswith("previous_run_")
+    ]
 
-    print(
+    nums = []
+    for d in previous_run_dirs:
+        parts = d.name.split("_")
+        if len(parts) != 3 or parts[0] != "previous" or parts[1] != "run":
+            raise ReproductionError(
+                f"Found irregularly named archive directory: {d.name}"
+            )
+
+        num_str = parts[2]
+        if not num_str.isdigit():
+            raise ReproductionError(
+                f"Archive directory number is not an integer: {d.name}"
+            )
+
+        nums.append(int(num_str))
+
+    next_idx = max(nums) + 1 if nums else 0
+    return work_dir / f"previous_run_{next_idx}"
+
+
+def archive_previous_run(work_dir: Path):
+    """
+    Move existing corpus.db and syz-manager.log to a previous_run_X directory, and zip the log.
+    """
+    corpus = work_dir / CORPUS_FILENAME
+    log_file = work_dir / SYZ_MANAGER_LOG_FILENAME
+
+    if not corpus.exists() and not log_file.exists():
+        return
+
+    old_dir = get_next_archive_dir(work_dir)
+    old_dir.mkdir(parents=False, exist_ok=True)
+
+    if corpus.exists():
+        new_corpus = old_dir / CORPUS_FILENAME
+        os.rename(corpus, new_corpus)
+        log(f"[ok] moved {corpus.name} to {old_dir.name}")
+
+    if log_file.exists():
+        new_log = old_dir / SYZ_MANAGER_LOG_FILENAME
+        os.rename(log_file, new_log)
+        log(f"[ok] moved {log_file.name} to {old_dir.name}")
+
+        # Wait for gzip to finish before continuing
+        log(f"[info] zipping {new_log}...")
+        subprocess.run(["gzip", str(new_log)], check=True)
+        log(f"[ok] zipped {new_log.name}.gz")
+
+
+def handle_existing_corpus(work_dir: Path):
+    corpus = work_dir / CORPUS_FILENAME
+    if not corpus.exists():
+        return
+
+    log(
         f"The directory {work_dir} already has a corpus.db file. Would you like to continue fuzzing from this run?"
     )
     reuse = prompt_for_confirm()
@@ -494,16 +572,7 @@ def handle_existing_corpus(work_dir: Path, corpus: Path):
     if reuse:
         return
     else:
-        previous_run_dirs = [
-            subddir
-            for subddir in work_dir.iterdir()
-            if subddir.is_dir() and subddir.name.startswith("previous_run")
-        ]
-        old_dir = work_dir / f"previous_run_{len(previous_run_dirs)}"
-        old_dir.mkdir()
-        new_corpus = old_dir / CORPUS_FILENAME
-        corpus.rename(new_corpus)
-        print(f"[ok] moved {corpus} to {new_corpus}")
+        archive_previous_run(work_dir)
         return
 
 
@@ -513,40 +582,64 @@ def write_repro_files(repro_dir: Path, expected_files: dict[Path, str]):
     """
     for fpath, content in expected_files.items():
         fpath.write_text(content)
-        print(f"[write] {fpath} ({len(content)} bytes)")
+        log(f"[write] {fpath} ({len(content)} bytes)")
 
-    print(
+    log(
         f"[ok] Working tree {repro_dir.parent} created with fresh reproduction package."
     )
 
 
 def run_syz_manager(
-    syzkaller_src: Path, cfg_path: Path, log_file: Path, verbosity: int
+    syzkaller_src: Path,
+    cfg_path: Path,
+    log_file: Path,
+    verbosity: int,
+    run_hours: float | None,
 ):
     """Run syz-manager with the given config and verbosity level, redirecting output with tee."""
-    syz_manager_bin = syzkaller_src
-    for part in SYZ_MANAGER_BIN_RELATIVE_PATH:
-        syz_manager_bin = syz_manager_bin / part
+    syz_manager_bin = syzkaller_src.joinpath(*SYZ_MANAGER_BIN_RELATIVE_PATH)
     if not syz_manager_bin.exists():
         raise ConfigurationError(
             f"Expected syz-manager binary at {syz_manager_bin}, but it was missing. Forgot to compile?"
         )
 
-    # If log_file exists, append an increasing number to the filename
-    base = log_file.stem
-    ext = log_file.suffix
-    parent = log_file.parent
-    candidate = log_file
-    counter = 1
-    while candidate.exists():
-        candidate = parent / f"{base}_{counter}{ext}"
-        counter += 1
+    if run_hours is not None:
+        candidate = log_file
+    else:
+        # If log_file exists, append an increasing number to the filename
+        base = log_file.stem
+        ext = log_file.suffix
+        parent = log_file.parent
+        candidate = log_file
+        counter = 1
+        while candidate.exists():
+            candidate = parent / f"{base}_{counter}{ext}"
+            counter += 1
 
     cmd = f"{syz_manager_bin} -vv {verbosity} -config {cfg_path} 2>&1 | tee {candidate}"
-    print(f"running {cmd}")
+    log(f"running {cmd}")
 
-    # Hand over execution: replace current process with syz-manager+tee
-    os.execvp("bash", ["bash", "-c", cmd])
+    # Start the process in its own process group so we can reliably kill its whole tree
+    proc = subprocess.Popen(["bash", "-c", cmd], preexec_fn=os.setpgrp)
+
+    try:
+        if run_hours is not None:
+            try:
+                proc.wait(timeout=run_hours * 3600)
+            except subprocess.TimeoutExpired:
+                log(
+                    f"\n[info] Campaign run time of {run_hours} hours reached. Terminating syz-manager..."
+                )
+                # Send SIGTERM to gracefully terminate syz-manager and children
+                os.killpg(proc.pid, signal.SIGTERM)
+                proc.wait()
+        else:
+            proc.wait()
+    except KeyboardInterrupt:
+        log("\n[info] Received KeyboardInterrupt, stopping syz-manager gracefully...")
+        os.killpg(proc.pid, signal.SIGINT)
+        proc.wait()
+        raise
 
 
 def main():
@@ -569,10 +662,20 @@ def main():
             syzkaller_src = config["syzkaller_src"]
 
         if not confirm_paths(config):
-            print("Operation cancelled by user")
+            log("Operation cancelled by user")
             sys.exit(0)
 
     work_dir = Path(args.work_name).resolve()
+
+    if args.run_hours is not None:
+        if (work_dir / CORPUS_FILENAME).exists() or (
+            work_dir / SYZ_MANAGER_LOG_FILENAME
+        ).exists():
+            raise ConfigurationError(
+                f"Working directory {work_dir} already contains {CORPUS_FILENAME} or {SYZ_MANAGER_LOG_FILENAME}. "
+                "When using --run-hours, the initial state must be clean."
+            )
+
     repro_dir = work_dir / REPRO_PACKAGE_DIRNAME
     real_cfg = repro_dir / REAL_CFG_FILENAME
     linux_config_file = repro_dir / LINUX_CONFIG_FILENAME
@@ -594,26 +697,16 @@ def main():
         syzkaller_commit_file: json.dumps(expected_syzkaller_commit, indent=4),
     }
 
-    if work_dir.exists():
-        existing_repro, existing_corpus = get_existing_work_dir(work_dir)
+    campaign_count = 0
 
-        if existing_repro is not None:
-            check_repro_package(existing_repro, expected_files)
-        else:
-            create_repro_dir(
-                linux_src,
-                syzkaller_src,
-                repro_dir,
-                expected_linux_commit,
-                expected_syzkaller_commit,
-                expected_files,
-            )
-
-        if existing_corpus is not None:
-            handle_existing_corpus(work_dir, existing_corpus)
-
-    else:
+    if not work_dir.exists():
         work_dir.mkdir(parents=False)
+
+    existing_repro, existing_corpus = get_existing_work_dir(work_dir)
+
+    if existing_repro is not None:
+        check_repro_package(existing_repro, expected_files)
+    else:
         create_repro_dir(
             linux_src,
             syzkaller_src,
@@ -623,17 +716,38 @@ def main():
             expected_files,
         )
 
-    log_file = work_dir / SYZ_MANAGER_LOG_FILENAME
-    run_syz_manager(Path(syzkaller_src), real_cfg, log_file, args.verbosity)
+    if args.run_hours is None and existing_corpus is not None:
+        handle_existing_corpus(work_dir)
+
+    while True:
+        campaign_count += 1
+
+        if campaign_count > 1:
+            archive_previous_run(work_dir)
+
+        log_file = work_dir / SYZ_MANAGER_LOG_FILENAME
+
+        run_syz_manager(
+            Path(syzkaller_src), real_cfg, log_file, args.verbosity, args.run_hours
+        )
+
+        if args.run_hours is None:
+            break
+
+        if args.N_runs is not None and campaign_count >= args.N_runs:
+            log(
+                f"\n[info] Completed the desired amount of campaigns ({args.N_runs}). Exiting."
+            )
+            break
 
 
 def create_repro_dir(
-    linux_src,
-    syzkaller_src,
-    repro_dir,
-    expected_linux_commit,
-    expected_syzkaller_commit,
-    expected_files,
+    linux_src: str,
+    syzkaller_src: str,
+    repro_dir: Path,
+    expected_linux_commit: dict[str, str | None],
+    expected_syzkaller_commit: dict[str, str | None],
+    expected_files: dict[Path, str],
 ):
     repro_dir.mkdir(parents=False)
     create_patch_from_info(
@@ -651,13 +765,13 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except ReproductionError as e:
-        print(
+        log(
             f"[ReproductionError]: {e}",
             file=sys.stderr,
         )
         sys.exit(1)
     except ConfigurationError as e:
-        print(
+        log(
             f"[ConfigurationError]: {e}",
             file=sys.stderr,
         )
