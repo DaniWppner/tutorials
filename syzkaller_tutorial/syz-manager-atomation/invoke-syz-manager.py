@@ -6,6 +6,8 @@ import subprocess
 import json
 from pathlib import Path
 import difflib
+import gzip
+import mmap
 import signal
 import re
 from datetime import datetime
@@ -23,6 +25,15 @@ SYZ_MANAGER_LOG_FILENAME = "syz-manager.log"
 README_FILENAME = "README.md"
 SYZ_MANAGER_BIN_RELATIVE_PATH = ["bin", "syz-manager"]
 BZIMAGE_RELATIVE_PATH = ["arch", "x86", "boot", "bzImage"]
+VMLINUX_FILENAME = "vmlinux"
+# linux_banner; the release must start with a digit to skip the "Linux version %s (" format string
+LINUX_BANNER_RE = re.compile(rb"Linux version (\d\S*) \(")
+# Appended by scripts/setlocalversion when CONFIG_LOCALVERSION_AUTO=y: 12 hex chars of HEAD,
+# plus "-dirty" if tracked files had uncommitted changes at build time
+LINUX_RELEASE_HASH_RE = re.compile(r"-g([0-9a-f]{12})(-dirty)?$")
+# CONFIG_IKCONFIG embeds the gzipped .config between these markers (kernel/configs.c)
+IKCONFIG_START_MARKER = b"IKCFG_ST"
+IKCONFIG_END_MARKER = b"IKCFG_ED"
 # Created in the work dir on resume: elapsed time is derived from the log's first/last timestamps,
 # which is only valid for a campaign that was resumed once
 RESUMED_FLAG_FILENAME = ".resumed"
@@ -187,6 +198,74 @@ def get_linux_config(linux_src: Path) -> str:
     if not cfg_path.exists():
         raise ConfigurationError(f"Linux .config file not found at {cfg_path}")
     return cfg_path.read_text()
+
+
+def check_linux_tree_clean(linux_src: Path):
+    """
+    Raise if tracked files in the Linux tree have uncommitted changes,
+    since the reproduction package only records committed history.
+    """
+    dirty_files = subprocess.check_output(
+        ["git", "-C", str(linux_src), "status", "--porcelain", "--untracked-files=no"],
+        text=True,
+    ).strip()
+    if dirty_files:
+        raise ConfigurationError(
+            f"Linux tree at {linux_src} has uncommitted changes to tracked files:\n{dirty_files}." +
+            " Please commit these changes to be saved in reproduction package."
+        )
+
+
+def check_vmlinux_matches_tree(linux_src: Path, linux_config: str):
+    """
+    Raise if vmlinux was not built from the current HEAD of the Linux tree,
+    or if the .config embedded in it differs from linux_config.
+    Requires CONFIG_LOCALVERSION_AUTO and CONFIG_IKCONFIG in the build.
+    """
+    vmlinux_path = linux_src / VMLINUX_FILENAME
+    if not vmlinux_path.exists():
+        raise ConfigurationError(f"vmlinux not found at {vmlinux_path}")
+
+    with open(vmlinux_path, "rb") as f, mmap.mmap(
+        f.fileno(), 0, access=mmap.ACCESS_READ
+    ) as vmlinux:
+        banner = LINUX_BANNER_RE.search(vmlinux)
+        config_start = vmlinux.find(IKCONFIG_START_MARKER)
+        config_end = vmlinux.find(IKCONFIG_END_MARKER, config_start)
+        if banner is None:
+            raise ConfigurationError(f"No 'Linux version' banner found in {vmlinux_path}")
+        if config_start == -1 or config_end == -1:
+            raise ConfigurationError(
+                f"No embedded .config found in {vmlinux_path}, was it built with CONFIG_IKCONFIG=y?"
+            )
+        release = banner.group(1).decode()
+        embedded_config = gzip.decompress(
+            vmlinux[config_start + len(IKCONFIG_START_MARKER) : config_end]
+        ).decode()
+
+    release_hash = LINUX_RELEASE_HASH_RE.search(release)
+    if release_hash is None:
+        raise ConfigurationError(
+            f"Kernel release {release} of {vmlinux_path} carries no commit hash, "
+            "was it built with CONFIG_LOCALVERSION_AUTO=y?"
+        )
+    if release_hash.group(2) is not None:
+        raise ConfigurationError(
+            f"{vmlinux_path} (release {release}) was built from a tree with uncommitted changes."
+        )
+    head = subprocess.check_output(
+        ["git", "-C", str(linux_src), "rev-parse", "HEAD"], text=True
+    ).strip()
+    if not head.startswith(release_hash.group(1)):
+        raise ConfigurationError(
+            f"{vmlinux_path} was built from commit {release_hash.group(1)} (release {release}), "
+            f"but the HEAD of {linux_src} is {head}."
+        )
+
+    if embedded_config != linux_config:
+        raise ConfigurationError(
+            f"The .config embedded in {vmlinux_path} differs from {linux_src / LINUX_CONFIG_FILENAME}."
+        )
 
 
 def get_closest_upstream_ancestor(
@@ -798,6 +877,8 @@ def main():
         Path(args.cfg_template), work_dir, Path(syzkaller_src), Path(linux_src)
     )
     expected_linux_config = get_linux_config(Path(linux_src))
+    check_linux_tree_clean(Path(linux_src))
+    check_vmlinux_matches_tree(Path(linux_src), expected_linux_config)
     expected_linux_commit = get_linux_history_info(Path(linux_src))
     expected_syzkaller_commit = get_syzkaller_history_info(Path(syzkaller_src))
 
