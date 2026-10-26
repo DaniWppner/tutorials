@@ -6,8 +6,9 @@ import subprocess
 import json
 from pathlib import Path
 import difflib
-import time
 import signal
+import re
+from datetime import datetime
 
 # Constants for hardcoded paths and filenames
 REPRO_PACKAGE_DIRNAME = "repro_package"
@@ -22,6 +23,10 @@ SYZ_MANAGER_LOG_FILENAME = "syz-manager.log"
 README_FILENAME = "README.md"
 SYZ_MANAGER_BIN_RELATIVE_PATH = ["bin", "syz-manager"]
 BZIMAGE_RELATIVE_PATH = ["arch", "x86", "boot", "bzImage"]
+# Created in the work dir on resume: elapsed time is derived from the log's first/last timestamps,
+# which is only valid for a campaign that was resumed once
+RESUMED_FLAG_FILENAME = ".resumed"
+LOG_TIMESTAMP_RE = re.compile(r"^(\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}) ")
 
 # Update if it would make reproduction packages from the previous version incompatible
 INVOKE_SYZ_MANAGER_VERSION = "1.1.1"
@@ -140,6 +145,12 @@ def parse_args():
         "--N-runs",
         type=int,
         help="Desired amount of campaigns to run (default: infinite)",
+    )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Continue an interrupted --run-hours campaign: only the remaining time is run, "
+        "and --N-runs counts the campaigns already archived in the working directory",
     )
     return parser.parse_args()
 
@@ -536,6 +547,56 @@ def check_repro_package(repro_dir: Path, expected_files: dict[Path, str]):
     log(f"[ok] Reproduction package {repro_dir} is valid.")
 
 
+def _parse_log_timestamp(line: str) -> datetime | None:
+    m = LOG_TIMESTAMP_RE.match(line)
+    return datetime.strptime(m.group(1), "%Y/%m/%d %H:%M:%S") if m else None
+
+
+def elapsed_hours_from_log(log_file: Path) -> float:
+    """
+    Time between the first and last timestamped lines of syz-manager.log, in hours.
+    Assumes the log has not been resumed before (see RESUMED_FLAG_FILENAME).
+    """
+    first = None
+    with open(log_file, errors="replace") as f:
+        for line in f:
+            first = _parse_log_timestamp(line)
+            if first is not None:
+                break
+    if first is None:
+        return 0.0
+
+    last = None
+    with open(log_file, "rb") as f:
+        size = f.seek(0, os.SEEK_END)
+        chunk = 1 << 16
+        # Grow the tail window until it contains a timestamped line
+        while last is None:
+            start = max(size - chunk, 0)
+            f.seek(start)
+            lines = f.read(size - start).decode(errors="replace").splitlines()
+            if start > 0:
+                lines = lines[1:]  # first line may be cut in the middle
+            for line in reversed(lines):
+                last = _parse_log_timestamp(line)
+                if last is not None:
+                    break
+            if start == 0:
+                break
+            chunk *= 4
+
+    return (last - first).total_seconds() / 3600 if last else 0.0
+
+
+def count_finished_campaigns(work_dir: Path) -> int:
+    """Number of archived campaigns (previous_run_X directories)."""
+    return sum(
+        1
+        for d in work_dir.iterdir()
+        if d.is_dir() and d.name.startswith("previous_run_")
+    )
+
+
 def get_next_archive_dir(work_dir: Path) -> Path:
     """Find the next available previous_run_X directory safely."""
     previous_run_dirs = [
@@ -570,6 +631,7 @@ def archive_previous_run(work_dir: Path):
     """
     corpus = work_dir / CORPUS_FILENAME
     log_file = work_dir / SYZ_MANAGER_LOG_FILENAME
+    (work_dir / RESUMED_FLAG_FILENAME).unlink(missing_ok=True)
 
     if not corpus.exists() and not log_file.exists():
         return
@@ -629,6 +691,7 @@ def run_syz_manager(
     log_file: Path,
     verbosity: int,
     run_hours: float | None,
+    resume: bool = False,
 ):
     """Run syz-manager with the given config and verbosity level, redirecting output with tee."""
     syz_manager_bin = syzkaller_src.joinpath(*SYZ_MANAGER_BIN_RELATIVE_PATH)
@@ -650,7 +713,8 @@ def run_syz_manager(
             candidate = parent / f"{base}_{counter}{ext}"
             counter += 1
 
-    cmd = f"{syz_manager_bin} -vv {verbosity} -config {cfg_path} 2>&1 | tee {candidate}"
+    tee_flags = "-a " if resume else ""
+    cmd = f"{syz_manager_bin} -vv {verbosity} -config {cfg_path} 2>&1 | tee {tee_flags}{candidate}"
     log(f"running {cmd}")
 
     # Start the process in its own process group so we can reliably kill its whole tree
@@ -701,7 +765,20 @@ def main():
 
     work_dir = Path(args.work_name).resolve()
 
-    if args.run_hours is not None:
+    if args.resume and args.run_hours is None:
+        raise ConfigurationError("--resume requires --run-hours")
+
+    if args.resume:
+        if (work_dir / RESUMED_FLAG_FILENAME).exists():
+            raise ConfigurationError(
+                f"The current campaign in {work_dir} was already resumed once; "
+                "its elapsed time can no longer be derived from the log."
+            )
+        if not (work_dir / SYZ_MANAGER_LOG_FILENAME).exists():
+            raise ConfigurationError(
+                f"--resume given but {work_dir / SYZ_MANAGER_LOG_FILENAME} does not exist."
+            )
+    elif args.run_hours is not None:
         if (work_dir / CORPUS_FILENAME).exists() or (
             work_dir / SYZ_MANAGER_LOG_FILENAME
         ).exists():
@@ -753,17 +830,45 @@ def main():
     if args.run_hours is None and existing_corpus is not None:
         handle_existing_corpus(work_dir)
 
+    resuming = args.resume
+    run_hours = args.run_hours
+    if resuming:
+        campaign_count = count_finished_campaigns(work_dir)
+        if args.N_runs is not None and campaign_count >= args.N_runs:
+            raise ConfigurationError(
+                f"{campaign_count} campaigns already finished in {work_dir}; "
+                f"nothing left to resume for --N-runs {args.N_runs}."
+            )
+        elapsed = elapsed_hours_from_log(work_dir / SYZ_MANAGER_LOG_FILENAME)
+        (work_dir / RESUMED_FLAG_FILENAME).touch()
+        log(
+            f"[info] Resuming campaign {campaign_count + 1}: {elapsed:.3f}h of {args.run_hours}h already elapsed."
+        )
+
     while True:
         campaign_count += 1
 
-        if campaign_count > 1:
+        if campaign_count > 1 and not resuming:
             archive_previous_run(work_dir)
 
         log_file = work_dir / SYZ_MANAGER_LOG_FILENAME
 
-        run_syz_manager(
-            Path(syzkaller_src), real_cfg, log_file, args.verbosity, args.run_hours
-        )
+        if resuming:
+            run_hours = max(args.run_hours - elapsed, 0.0)
+
+        if run_hours > 0 or not resuming:
+            run_syz_manager(
+                Path(syzkaller_src),
+                real_cfg,
+                log_file,
+                args.verbosity,
+                run_hours,
+                resume=resuming,
+            )
+        else:
+            log("[info] Interrupted campaign had already reached its run time.")
+        resuming = False
+        run_hours = args.run_hours
 
         if args.run_hours is None:
             break
