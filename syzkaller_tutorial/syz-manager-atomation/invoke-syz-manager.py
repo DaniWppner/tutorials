@@ -34,6 +34,9 @@ LINUX_RELEASE_HASH_RE = re.compile(r"-g([0-9a-f]{12})(-dirty)?$")
 # CONFIG_IKCONFIG embeds the gzipped .config between these markers (kernel/configs.c)
 IKCONFIG_START_MARKER = b"IKCFG_ST"
 IKCONFIG_END_MARKER = b"IKCFG_ED"
+# Go records the -ldflags in the binary's build info; tools/version.mk sets GitRevision to HEAD,
+# plus "+" if tracked files had unstaged changes at build time
+SYZ_MANAGER_REVISION_RE = re.compile(rb"prog\.GitRevision=([0-9a-f]{40})(\+)?")
 # Created in the work dir on resume: elapsed time is derived from the log's first/last timestamps,
 # which is only valid for a campaign that was resumed once
 RESUMED_FLAG_FILENAME = ".resumed"
@@ -200,19 +203,40 @@ def get_linux_config(linux_src: Path) -> str:
     return cfg_path.read_text()
 
 
-def check_linux_tree_clean(linux_src: Path):
+def check_tree_clean(repo_source_root: Path):
     """
-    Raise if tracked files in the Linux tree have uncommitted changes,
+    Raise if tracked files in the repo have uncommitted changes,
     since the reproduction package only records committed history.
     """
     dirty_files = subprocess.check_output(
-        ["git", "-C", str(linux_src), "status", "--porcelain", "--untracked-files=no"],
+        ["git", "-C", str(repo_source_root), "status", "--porcelain", "--untracked-files=no"],
         text=True,
     ).strip()
     if dirty_files:
         raise ConfigurationError(
-            f"Linux tree at {linux_src} has uncommitted changes to tracked files:\n{dirty_files}." +
+            f"Tree at {repo_source_root} has uncommitted changes to tracked files:\n{dirty_files}." +
             " Please commit these changes to be saved in reproduction package."
+        )
+
+
+def check_built_from_head(
+    repo_source_root: Path, binary_path: Path, built_hash: str, built_dirty: bool
+):
+    """
+    Raise if the commit (possibly abbreviated) that binary_path reports being built from
+    is not the current HEAD of the repo, or if it was built with uncommitted changes.
+    """
+    if built_dirty:
+        raise ConfigurationError(
+            f"{binary_path} was built from a tree with uncommitted changes (commit {built_hash})."
+        )
+    head = subprocess.check_output(
+        ["git", "-C", str(repo_source_root), "rev-parse", "HEAD"], text=True
+    ).strip()
+    if not head.startswith(built_hash):
+        raise ConfigurationError(
+            f"{binary_path} was built from commit {built_hash}, "
+            f"but the HEAD of {repo_source_root} is {head}. Forgot to recompile?"
         )
 
 
@@ -249,23 +273,42 @@ def check_vmlinux_matches_tree(linux_src: Path, linux_config: str):
             f"Kernel release {release} of {vmlinux_path} carries no commit hash, "
             "was it built with CONFIG_LOCALVERSION_AUTO=y?"
         )
-    if release_hash.group(2) is not None:
-        raise ConfigurationError(
-            f"{vmlinux_path} (release {release}) was built from a tree with uncommitted changes."
-        )
-    head = subprocess.check_output(
-        ["git", "-C", str(linux_src), "rev-parse", "HEAD"], text=True
-    ).strip()
-    if not head.startswith(release_hash.group(1)):
-        raise ConfigurationError(
-            f"{vmlinux_path} was built from commit {release_hash.group(1)} (release {release}), "
-            f"but the HEAD of {linux_src} is {head}."
-        )
+    check_built_from_head(
+        linux_src,
+        vmlinux_path,
+        release_hash.group(1),
+        built_dirty=release_hash.group(2) is not None,
+    )
 
     if embedded_config != linux_config:
         raise ConfigurationError(
             f"The .config embedded in {vmlinux_path} differs from {linux_src / LINUX_CONFIG_FILENAME}."
         )
+
+
+def check_syz_manager_matches_tree(syzkaller_src: Path):
+    """
+    Raise if bin/syz-manager was not built from the current HEAD of the syzkaller tree.
+    The other binaries need no check: syz-manager refuses executors with a different GitRevision.
+    """
+    syz_manager_path = syzkaller_src.joinpath(*SYZ_MANAGER_BIN_RELATIVE_PATH)
+    if not syz_manager_path.exists():
+        raise ConfigurationError(
+            f"Expected syz-manager binary at {syz_manager_path}, but it was missing. Forgot to compile?"
+        )
+
+    with open(syz_manager_path, "rb") as f, mmap.mmap(
+        f.fileno(), 0, access=mmap.ACCESS_READ
+    ) as syz_manager:
+        revision = SYZ_MANAGER_REVISION_RE.search(syz_manager)
+        if revision is None:
+            raise ConfigurationError(
+                f"No GitRevision found in {syz_manager_path}, was it built with make?"
+            )
+        built_hash = revision.group(1).decode()
+        built_dirty = revision.group(2) is not None
+
+    check_built_from_head(syzkaller_src, syz_manager_path, built_hash, built_dirty)
 
 
 def get_closest_upstream_ancestor(
@@ -877,8 +920,10 @@ def main():
         Path(args.cfg_template), work_dir, Path(syzkaller_src), Path(linux_src)
     )
     expected_linux_config = get_linux_config(Path(linux_src))
-    check_linux_tree_clean(Path(linux_src))
+    check_tree_clean(Path(linux_src))
     check_vmlinux_matches_tree(Path(linux_src), expected_linux_config)
+    check_tree_clean(Path(syzkaller_src))
+    check_syz_manager_matches_tree(Path(syzkaller_src))
     expected_linux_commit = get_linux_history_info(Path(linux_src))
     expected_syzkaller_commit = get_syzkaller_history_info(Path(syzkaller_src))
 
