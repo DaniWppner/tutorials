@@ -29,8 +29,11 @@ VMLINUX_FILENAME = "vmlinux"
 # linux_banner; the release must start with a digit to skip the "Linux version %s (" format string
 LINUX_BANNER_RE = re.compile(rb"Linux version (\d\S*) \(")
 # Appended by scripts/setlocalversion when CONFIG_LOCALVERSION_AUTO=y: 12 hex chars of HEAD,
-# plus "-dirty" if tracked files had uncommitted changes at build time
-LINUX_RELEASE_HASH_RE = re.compile(r"-g([0-9a-f]{12})(-dirty)?$")
+# plus "-dirty" if tracked files had uncommitted changes at build time.
+# The hash is omitted when HEAD is exactly at the tag of the kernel version
+LINUX_RELEASE_HASH_RE = re.compile(r"(?:-g([0-9a-f]{12}))?(-dirty)?$")
+# setlocalversion's mapping from kernel version to tag: 6.2.0-rc5 -> v6.2-rc5, 6.1.7 -> v6.1.7
+LINUX_VERSION_TAG_RE = re.compile(r"^(\d+\.\d+)\.0(.*)$")
 # CONFIG_IKCONFIG embeds the gzipped .config between these markers (kernel/configs.c)
 IKCONFIG_START_MARKER = b"IKCFG_ST"
 IKCONFIG_END_MARKER = b"IKCFG_ED"
@@ -267,23 +270,38 @@ def check_vmlinux_matches_tree(linux_src: Path, linux_config: str):
             vmlinux[config_start + len(IKCONFIG_START_MARKER) : config_end]
         ).decode()
 
-    release_hash = LINUX_RELEASE_HASH_RE.search(release)
-    if release_hash is None:
-        raise ConfigurationError(
-            f"Kernel release {release} of {vmlinux_path} carries no commit hash, "
-            "was it built with CONFIG_LOCALVERSION_AUTO=y?"
-        )
-    check_built_from_head(
-        linux_src,
-        vmlinux_path,
-        release_hash.group(1),
-        built_dirty=release_hash.group(2) is not None,
-    )
-
     if embedded_config != linux_config:
         raise ConfigurationError(
             f"The .config embedded in {vmlinux_path} differs from {linux_src / LINUX_CONFIG_FILENAME}."
         )
+    if "CONFIG_LOCALVERSION_AUTO=y" not in embedded_config.splitlines():
+        raise ConfigurationError(
+            f"{vmlinux_path} was not built with CONFIG_LOCALVERSION_AUTO=y, "
+            "so its release does not identify the commit it was built from."
+        )
+
+    release_hash = LINUX_RELEASE_HASH_RE.search(release)
+    built_hash = release_hash.group(1)
+    if built_hash is None:
+        # Assumes git worked during the build: setlocalversion silently prints nothing when it doesn't
+        version_tag = "v" + LINUX_VERSION_TAG_RE.sub(r"\1\2", release[: release_hash.start()])
+        tag_commit = subprocess.run(
+            ["git", "-C", str(linux_src), "rev-parse", "--verify", "--quiet", f"{version_tag}^{{commit}}"],
+            capture_output=True,
+            text=True,
+        )
+        if tag_commit.returncode != 0:
+            raise ConfigurationError(
+                f"Kernel release {release} of {vmlinux_path} carries no commit hash, "
+                f"but tag {version_tag} does not exist in {linux_src}."
+            )
+        built_hash = tag_commit.stdout.strip()
+    check_built_from_head(
+        linux_src,
+        vmlinux_path,
+        built_hash,
+        built_dirty=release_hash.group(2) is not None,
+    )
 
 
 def check_syz_manager_matches_tree(syzkaller_src: Path):
